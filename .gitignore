@@ -9,3 +9,8 @@ target/
 *.pfx
 *.p12
 *.pvk
+
+# .NET
+bin/
+obj/
+out/

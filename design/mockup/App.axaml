@@ -1,0 +1,95 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="IeumMock.App">
+  <Application.Resources>
+    <!-- 창 장식 - 제목 글자·전체 화면 버튼 없음, 캡션 버튼은 톤 색 -->
+    <ControlTheme x:Key="IeumCaption" TargetType="Button">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+      <Setter Property="Width" Value="46" />
+      <Setter Property="(WindowDecorationProperties.ElementRole)" Value="DecorationsElement" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" Content="{TemplateBinding Content}" />
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Surface2}" />
+      </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations">
+      <Setter Property="DefaultTitleBarHeight" Value="44" />
+      <Setter Property="DefaultFrameThickness" Value="1" />
+      <Setter Property="DefaultShadowThickness" Value="8" />
+      <Setter Property="Template">
+        <WindowDrawnDecorationsTemplate>
+          <WindowDrawnDecorationsContent>
+            <WindowDrawnDecorationsContent.Underlay>
+              <Panel>
+                <Border BorderThickness="{TemplateBinding FrameThickness}" BorderBrush="{DynamicResource Line}" IsHitTestVisible="False" />
+                <Panel VerticalAlignment="Top" Height="{TemplateBinding TitleBarHeight}" Background="Transparent"
+                       IsVisible="{TemplateBinding HasTitleBar}" WindowDecorationProperties.ElementRole="TitleBar" />
+              </Panel>
+            </WindowDrawnDecorationsContent.Underlay>
+            <WindowDrawnDecorationsContent.Overlay>
+              <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Height="{TemplateBinding TitleBarHeight}"
+                          IsVisible="{TemplateBinding HasTitleBar}" Orientation="Horizontal">
+                <Button Theme="{StaticResource IeumCaption}" WindowDecorationProperties.ElementRole="MinimizeButton">
+                  <Path Width="10" Height="1" Stretch="Fill" Fill="{DynamicResource Muted}" Data="M0 0h10v1h-10z" />
+                </Button>
+                <Button Theme="{StaticResource IeumCaption}" WindowDecorationProperties.ElementRole="MaximizeButton">
+                  <Path Width="10" Height="10" Stretch="Fill" Stroke="{DynamicResource Muted}" StrokeThickness="1" Data="M0.5 0.5h9v9h-9z" />
+                </Button>
+                <Button Theme="{StaticResource IeumCaption}" WindowDecorationProperties.ElementRole="CloseButton">
+                  <Path Width="10" Height="10" Stretch="Fill" Stroke="{DynamicResource Muted}" StrokeThickness="1" Data="M0 0L10 10M10 0L0 10" />
+                </Button>
+              </StackPanel>
+            </WindowDrawnDecorationsContent.Overlay>
+          </WindowDrawnDecorationsContent>
+        </WindowDrawnDecorationsTemplate>
+      </Setter>
+    </ControlTheme>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+    </Style>
+    <Style Selector="TextBlock.accent">
+      <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="ListBox">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Surface2}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Sel}" />
+    </Style>
+    <Style Selector="Border.add"><Setter Property="Background" Value="{DynamicResource AddBg}" /></Style>
+    <Style Selector="Border.del"><Setter Property="Background" Value="{DynamicResource DelBg}" /></Style>
+    <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource Surface2}" /></Style>
+    <Style Selector="Border.add TextBlock.sign"><Setter Property="Foreground" Value="{DynamicResource AddFg}" /></Style>
+    <Style Selector="Border.del TextBlock.sign"><Setter Property="Foreground" Value="{DynamicResource DelFg}" /></Style>
+    <Style Selector="Border.hunk TextBlock.code"><Setter Property="Foreground" Value="{DynamicResource Muted}" /></Style>
+    <!-- 깜빡이는 커서 -->
+    <Style Selector="Border.cursor">
+      <Style.Animations>
+        <Animation Duration="0:0:1.1" IterationCount="INFINITE">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+          <KeyFrame Cue="50%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+          <KeyFrame Cue="51%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </Application.Styles>
+</Application>

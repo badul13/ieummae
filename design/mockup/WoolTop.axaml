@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:IeumMock"
+             x:Class="IeumMock.WoolTop"
+             x:DataType="local:MockWindow">
+  <!-- 창 윗부분 - 양털 위로 치켜든 얼굴, 왼쪽에 앱 이름·저장소 -->
+  <Panel Height="156">
+    <local:WoolHeader IsHitTestVisible="False" />
+    <StackPanel Margin="26,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Spacing="10">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <TextBlock Text="ieummae" FontFamily="{DynamicResource FontHand}" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" IsHitTestVisible="False" />
+        <ItemsControl ItemsSource="{Binding Palettes}" VerticalAlignment="Center">
+          <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="2" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="local:PaletteChip">
+              <Button Classes="chip" Tag="{Binding Index}" Click="OnPalette" Padding="8,1">
+                <TextBlock Text="{Binding Name}" FontSize="13" Foreground="{DynamicResource Muted}" />
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </StackPanel>
+  </Panel>
+</UserControl>

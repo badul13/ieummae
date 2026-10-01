@@ -1,0 +1,99 @@
+<local:MockWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:IeumMock"
+        x:Class="IeumMock.CommitB"
+        x:DataType="local:MockWindow"
+        Width="1240" Height="800" WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True" ExtendClientAreaTitleBarHeightHint="40"
+        Background="{DynamicResource Bg}" FontFamily="{DynamicResource FontJua}" FontSize="14.5">
+  <local:MockWindow.Styles>
+    <StyleInclude Source="avares://ieum-mock/SewStyles.axaml" />
+  </local:MockWindow.Styles>
+  <Grid RowDefinitions="138,Auto,*">
+    <local:WoolTop />
+
+    <TextBlock Grid.Row="1" Text="{Binding CommitNote}" Classes="hand" Margin="30,0,26,12" />
+
+    <Grid Grid.Row="2" ColumnDefinitions="420,*" Margin="20,0,20,20">
+      <DockPanel>
+        <ContentControl DockPanel.Dock="Bottom" Classes="patch hot" Margin="0,14,0,0" Padding="20,16">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Commit message" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource AccentInk}" FontSize="17" />
+            <TextBox Height="80" AcceptsReturn="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent" Padding="0"
+                     FontFamily="{DynamicResource FontJua}" FontSize="14" Foreground="{DynamicResource Text}" Text="{Binding HeadMsg, Mode=OneWay}" />
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Classes="patch hot" Content="Commit" />
+              <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <CheckBox Content="Amend" FontSize="13.5" />
+                <CheckBox Content="Push after commit" FontSize="13.5" IsChecked="True" />
+              </StackPanel>
+            </DockPanel>
+          </StackPanel>
+        </ContentControl>
+        <ContentControl Classes="patch" Padding="14,16,14,10">
+          <DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="8,0,8,8">
+              <TextBlock DockPanel.Dock="Right" Text="Select all" Classes="hand" Foreground="{DynamicResource AccentInk}" />
+              <TextBlock Text="{Binding ChangesTitle}" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" />
+            </DockPanel>
+            <ListBox x:Name="FileList" ItemsSource="{Binding Files}">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:FileChange">
+                  <Grid ColumnDefinitions="32,*,Auto" Height="42" Margin="6,0,10,0">
+                    <CheckBox IsChecked="{Binding Checked}" MinWidth="0" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding Dir}" Classes="hand" FontSize="14" TextTrimming="LeadingCharacterEllipsis" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0">
+                      <TextBlock Text="{Binding StatusWord}" Classes="hand" FontSize="14" HorizontalAlignment="Right" />
+                      <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding AddText}" Foreground="{DynamicResource AddFg}" FontSize="12.5" />
+                        <TextBlock Text="{Binding DelText}" Foreground="{DynamicResource DelFg}" FontSize="12.5" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+        </ContentControl>
+      </DockPanel>
+
+      <ContentControl Grid.Column="1" Classes="patch" Margin="16,0,0,0" Padding="14,16,14,14">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top" Margin="10,0,10,10">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12">
+              <TextBlock Text="Unified" />
+              <TextBlock Text="Split" Foreground="{DynamicResource Muted}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="{Binding DiffFile.Name}" FontSize="18" />
+              <TextBlock Text="{Binding DiffFile.AddText}" Foreground="{DynamicResource AddFg}" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding DiffFile.DelText}" Foreground="{DynamicResource DelFg}" VerticalAlignment="Center" />
+            </StackPanel>
+          </DockPanel>
+          <ListBox ItemsSource="{Binding Lines}" Background="Transparent">
+            <ListBox.Styles>
+              <Style Selector="ListBoxItem:selected /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
+              <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
+              <Style Selector="Border.add, Border.del, Border.hunk"><Setter Property="CornerRadius" Value="6" /></Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="local:DiffLine">
+                <Border Classes.add="{Binding IsAdd}" Classes.del="{Binding IsDel}" Classes.hunk="{Binding IsHunk}" Padding="0,2">
+                  <Grid ColumnDefinitions="44,44,18,*">
+                    <TextBlock Text="{Binding Old}" Foreground="{DynamicResource Muted}" Opacity="0.7" FontSize="12.5" TextAlignment="Right" Margin="0,0,8,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding New}" Foreground="{DynamicResource Muted}" Opacity="0.7" FontSize="12.5" TextAlignment="Right" Margin="0,0,8,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding Sign}" Classes="sign" />
+                    <TextBlock Grid.Column="3" Text="{Binding Text}" Classes="code" FontFamily="{DynamicResource FontMono}" FontSize="13" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </ContentControl>
+    </Grid>
+  </Grid>
+</local:MockWindow>
