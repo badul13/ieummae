@@ -7,17 +7,6 @@ public partial class BranchChip : UserControl
     public BranchChip() => InitializeComponent();
 }
 
-public partial class CommitWindow : IeumWindow
-{
-    public CommitWindow() : this(null) { }
-
-    public CommitWindow(RepoModel? model)
-    {
-        InitializeComponent();
-        DataContext = model;
-    }
-}
-
 // 안내 창 - 저장소 아님, 모르는 명령 등
 public partial class MessageWindow : IeumWindow
 {

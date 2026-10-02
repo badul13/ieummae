@@ -142,6 +142,39 @@ public class IeumWindow : Window
         return ShowCard(title, body, [("Cancel", false, () => -1), (ok, true, () => radios.FindIndex(r => r.IsChecked == true))], -1);
     }
 
+    // 진행 상자 - git 진행 줄을 그대로 보여 주고, 끝나면 닫힘. 실패면 오류 상자로 바뀜
+    public async Task<GitResult> ProgressAsync(string title, Func<Action<string>, CancellationToken, Task<GitResult>> work)
+    {
+        using var cts = new CancellationTokenSource();
+        var lines = new TextBlock { Classes = { "hand" }, TextWrapping = TextWrapping.Wrap, FontSize = 15, MinHeight = 88, MaxHeight = 160, MaxWidth = 500 };
+        var last = new List<string>();
+        void OnLine(string line) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            // 같은 단계의 진행률 줄(예: "Receiving objects:  45%")은 덮어씀
+            var key = line.Split(':')[0];
+            if (last.Count > 0 && last[^1].Split(':')[0] == key) last[^1] = line; else last.Add(line);
+            if (last.Count > 6) last.RemoveAt(0);
+            lines.Text = string.Join("\n", last);
+        });
+        lines.Text = "시작";
+        var card = ShowCard(title, lines, [("Cancel", false, () => false)], false);
+        var run = work(OnLine, cts.Token);
+        var done = await Task.WhenAny(run, card);
+        if (done == card)
+        {
+            // 취소 - 진행 중인 git 프로세스 종료
+            cts.Cancel();
+            try { await run; } catch (OperationCanceledException) { }
+            return new GitResult(-1, "", "취소됨");
+        }
+        GitResult result;
+        try { result = await run; }
+        catch (OperationCanceledException) { result = new GitResult(-1, "", "취소됨"); }
+        _cancel?.Invoke();
+        if (!result.Ok) await AlertAsync(title + " 실패", result.Message);
+        return result;
+    }
+
     // git 실행 결과 확인 - 실패면 메시지 띄우고 false
     public async Task<bool> CheckAsync(string what, Task<GitResult> run)
     {

@@ -60,7 +60,7 @@ public partial class LogWindow : IeumWindow
 
     void OpenCommit()
     {
-        var w = new CommitWindow(Model!.Repo);
+        var w = new CommitWindow(new CommitModel(Model!.Repo, null));
         w.Closed += (_, _) => _ = ReloadAsync();
         w.Show();
     }

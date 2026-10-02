@@ -45,6 +45,13 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
         ("Mixed", "커밋과 스테이징 되돌림 - 변경 내용은 작업 트리에 남음"),
         ("Hard", "작업 트리까지 되돌림 - 커밋 안 한 변경 사라짐")], "Reset", 1)),
     ("dialog-branch", "대화 상자 · 이름 입력", false, () => Open("log", demo), w => _ = ((IeumWindow)w).PromptAsync("New Branch", "a1b2c3d4 에서 시작하는 브랜치 이름", "feat/단추", "Create", "만든 뒤 Checkout", true)),
+    ("dialog-progress", "진행 상자 · Push", false, () => Open("log", demo), w => _ = ((IeumWindow)w).ProgressAsync("Push", async (line, ct) =>
+    {
+        foreach (var l in new[] { "Enumerating objects: 9, done.", "Counting objects: 100% (9/9), done.", "Compressing objects:  66% (4/6)", "Writing objects:  40% (2/5), 1.20 KiB" }) line(l);
+        await Task.Delay(Timeout.Infinite, ct);
+        return new Ieummae.Core.Git.GitResult(0, "", "");
+    })),
+    ("commit-amend", "Commit · Amend 메시지", true, () => Open("commit", demo), w => { var m = (CommitModel)w.DataContext!; m.Message = "울타리 연결 준비\n\n- Flock 크기 계산을 Count 로\n- 메모 추가"; }),
 };
 // 대형 저장소 - IEUM_BIGREPO 지정 시 (커밋 수만 개 첫 화면 확인)
 if (Environment.GetEnvironmentVariable("IEUM_BIGREPO") is { Length: > 0 } big)

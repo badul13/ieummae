@@ -131,4 +131,9 @@
     <Setter Property="CornerRadius" Value="3,9,9,3" />
     <Setter Property="Padding" Value="6,1,9,1" />
   </Style>
+
+  <!-- 누를 수 없는 버튼 - 흐리게 -->
+  <Style Selector="Button.patch:disabled">
+    <Setter Property="Opacity" Value="0.45" />
+  </Style>
 </Styles>

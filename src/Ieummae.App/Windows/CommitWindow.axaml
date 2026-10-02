@@ -1,54 +1,91 @@
 <w:IeumWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
+        xmlns:v="clr-namespace:Ieummae.App.Views"
         xmlns:theme="clr-namespace:Ieummae.App.Theme"
         x:Class="Ieummae.App.Windows.CommitWindow"
-        x:DataType="w:RepoModel"
-        Width="1240" Height="800">
+        x:DataType="w:CommitModel"
+        Width="1240" Height="800" MinWidth="900" MinHeight="560">
   <Grid RowDefinitions="156,Auto,*">
     <w:WoolTop />
 
     <DockPanel Grid.Row="1" Margin="28,12,26,12">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
-        <Button Classes="patch" Content="Refresh" />
-        <Button Classes="patch" Content="Log" />
+        <Button x:Name="RefreshButton" Classes="patch" Content="Refresh" ToolTip.Tip="F5" />
+        <Button x:Name="LogButton" Classes="patch" Content="Log" />
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
         <TextBlock Text="Commit" FontSize="22" VerticalAlignment="Center" />
-        <TextBlock Text="{Binding Name}" Classes="hand" VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
-        <w:BranchChip />
+        <TextBlock Text="{Binding Repo.Name}" Classes="hand" VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+        <w:BranchChip DataContext="{Binding Repo}" />
+        <TextBlock Text="{Binding PathFilter}" Classes="hand" VerticalAlignment="Center" />
       </StackPanel>
     </DockPanel>
 
-    <!-- 본문 - Changes 체크 목록·메시지 카드 / diff (4단계) -->
-    <Grid Grid.Row="2" ColumnDefinitions="400,*" Margin="20,0,20,20">
+    <Grid Grid.Row="2" ColumnDefinitions="420,*" Margin="20,0,20,20">
+      <!-- 왼쪽 - Changes 체크 목록 + 메시지 카드 -->
       <DockPanel>
         <ContentControl DockPanel.Dock="Bottom" Classes="patch hot" Margin="0,14,0,0" Padding="22,16,20,16">
           <StackPanel Spacing="8">
-            <TextBlock Text="Message" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" />
-            <TextBox Height="78" AcceptsReturn="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent" Padding="0"
-                     FontFamily="{DynamicResource FontJua}" FontSize="16" Foreground="{DynamicResource Text}">
-              <TextBox.Styles>
-                <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement, TextBox:focus /template/ Border#PART_BorderElement">
-                  <Setter Property="Background" Value="Transparent" />
-                  <Setter Property="BorderThickness" Value="0" />
-                </Style>
-              </TextBox.Styles>
-            </TextBox>
             <DockPanel>
-              <Button DockPanel.Dock="Right" Classes="patch hot" Content="Commit" />
+              <Button x:Name="HistoryButton" DockPanel.Dock="Right" Classes="bare" VerticalAlignment="Center">
+                <TextBlock Text="최근 메시지" Classes="hand" Foreground="{DynamicResource Accent}" />
+              </Button>
+              <TextBlock Text="Message" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" />
+            </DockPanel>
+            <TextBox x:Name="MessageBox" Classes="sew" Height="96" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Message}"
+                     PlaceholderText="첫 줄은 요약, 빈 줄 다음 자세한 설명" />
+            <DockPanel>
+              <Button x:Name="CommitButton" DockPanel.Dock="Right" Classes="patch hot" Content="Commit" IsEnabled="{Binding CanCommit}" ToolTip.Tip="Ctrl+Enter" />
               <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                <CheckBox Content="Amend" FontSize="14" />
-                <CheckBox Content="Push" FontSize="14" />
+                <CheckBox Content="Amend" FontSize="14" IsChecked="{Binding Amend}" />
+                <CheckBox Content="Push" FontSize="14" IsChecked="{Binding Push}" />
               </StackPanel>
             </DockPanel>
           </StackPanel>
         </ContentControl>
-        <theme:KnitPanel Yarn="Knit2" Padding="24,18,16,14">
-          <TextBlock Text="Changes" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" VerticalAlignment="Top" />
+
+        <theme:KnitPanel Yarn="Knit2" Padding="16,18,14,12">
+          <DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="8,0,8,6">
+              <Button x:Name="AllButton" DockPanel.Dock="Right" Classes="bare" VerticalAlignment="Center">
+                <TextBlock Text="Select all" Classes="hand" Foreground="{DynamicResource Accent}" />
+              </Button>
+              <TextBlock Text="{Binding ChangesTitle}" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" />
+            </DockPanel>
+            <Panel>
+              <TextBlock Text="{Binding Notice}" Classes="hand" FontSize="17" TextWrapping="Wrap" Margin="10" HorizontalAlignment="Center"
+                         IsVisible="{Binding Notice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <ListBox x:Name="FileList" ItemsSource="{Binding Files}" SelectionMode="Multiple" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="w:FileRow">
+                    <Grid ColumnDefinitions="32,*,Auto" Height="44" Margin="6,0,10,0" Background="Transparent">
+                      <CheckBox IsChecked="{Binding Checked}" IsEnabled="{Binding CanCheck}" MinWidth="0" VerticalAlignment="Center" />
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="{x:Static theme:DotsTrimming.End}" />
+                        <TextBlock Text="{Binding Dir}" Classes="hand" FontSize="14" TextTrimming="{x:Static theme:DotsTrimming.Start}" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0">
+                        <TextBlock Text="{Binding StatusWord}" Classes="hand" FontSize="14" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource Muted}" />
+                        <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right" IsVisible="{Binding HasCounts}">
+                          <TextBlock Text="{Binding AddText}" Foreground="{DynamicResource AddFg}" FontSize="12.5" />
+                          <TextBlock Text="{Binding DelText}" Foreground="{DynamicResource DelFg}" FontSize="12.5" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Panel>
+          </DockPanel>
         </theme:KnitPanel>
       </DockPanel>
-      <theme:KnitPanel Grid.Column="1" Margin="16,0,0,0" Padding="16,18,16,14" />
+
+      <!-- 오른쪽 - 고른 파일 diff -->
+      <theme:KnitPanel Grid.Column="1" Margin="16,0,0,0" Padding="16,18,16,14">
+        <v:DiffView x:Name="Diff" />
+      </theme:KnitPanel>
     </Grid>
   </Grid>
 </w:IeumWindow>

@@ -12,7 +12,7 @@ public static class Launcher
     {
         // 하위 폴더·파일이면 그 경로만의 로그
         ["log"] = ("Log", (m, c) => new LogWindow(new LogModel(m, new LogQuery(Path: m.Repo.Relative(c.Path) is { Length: > 0 } p ? p : null)))),
-        ["commit"] = ("Commit", (m, _) => new CommitWindow(m)),
+        ["commit"] = ("Commit", (m, c) => new CommitWindow(new CommitModel(m, m.Repo.Relative(c.Path) is { Length: > 0 } p ? p : null))),
         // 파일 하나 - 작업 트리 변경 (HEAD 대비)
         ["diff"] = ("Diff", (m, c) => new DiffWindow(m, null, m.Repo.Relative(c.Path), "작업 트리 · HEAD 대비")),
     };
