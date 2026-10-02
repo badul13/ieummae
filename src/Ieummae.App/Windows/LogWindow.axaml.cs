@@ -60,6 +60,8 @@ public partial class LogWindow : IeumWindow
         Add("Tags", act.TagsAsync);
         Add("Remotes", act.RemotesAsync);
         MoreButton.Flyout = more;
+        act.OnConflicts = () => { OpenConflicts(); return Task.CompletedTask; };
+        ResolveButton.Click += (_, _) => OpenConflicts();
         Actions = act;
     }
 
@@ -93,6 +95,13 @@ public partial class LogWindow : IeumWindow
         if (Model?.Selected is not { } row || FileList.SelectedItem is not ChangedFile f) return;
         var e = row.Entry;
         new DiffWindow(Model.Repo, new DiffSpec.Commit(e.Hash, e.Parents.FirstOrDefault()), f.Path, $"{e.Short} · {e.Subject}").Show();
+    }
+
+    void OpenConflicts()
+    {
+        var w = new ConflictWindow(new ConflictModel(Model!.Repo));
+        w.Closed += (_, _) => _ = ReloadAsync();
+        w.Show();
     }
 
     void OpenCommit()

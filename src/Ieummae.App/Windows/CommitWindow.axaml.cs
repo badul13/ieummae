@@ -28,6 +28,12 @@ public partial class CommitWindow : IeumWindow
         LogButton.Click += (_, _) => new LogWindow(new LogModel(model.Repo, new LogQuery())).Show();
         CommitButton.Click += async (_, _) => await CommitAsync();
         HistoryButton.Click += (_, _) => ShowHistory();
+        ResolveButton.Click += (_, _) =>
+        {
+            var w = new ConflictWindow(new ConflictModel(model.Repo));
+            w.Closed += async (_, _) => await RefreshAsync();
+            w.Show();
+        };
         KeyDown += async (_, e) =>
         {
             if (DialogOpen) return;

@@ -21,11 +21,25 @@ public sealed class RepoModel(Repository repo) : INotifyPropertyChanged
     string _sync = "";
     public string SyncText { get => _sync; private set => Set(ref _sync, value); }
 
+    // 진행 중인 병합·리베이스 등 - 제목 줄에 Resolve 버튼
+    string _op = "";
+    public string OperationText { get => _op; private set { Set(ref _op, value); PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOperation))); } }
+    public bool HasOperation => _op.Length > 0;
+
     public async Task LoadAsync()
     {
         var branch = Repo.BranchAsync();
         var ab = Repo.AheadBehindAsync();
+        var op = Repo.OperationAsync();
         Branch = await branch ?? Detached;
+        OperationText = await op switch
+        {
+            Operation.Merge => "Merge 중",
+            Operation.Rebase => "Rebase 중",
+            Operation.CherryPick => "Cherry-pick 중",
+            Operation.Revert => "Revert 중",
+            _ => "",
+        };
         SyncText = await ab switch
         {
             null => "",

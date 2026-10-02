@@ -81,6 +81,37 @@ static class Demo
 
         """.Replace("\r", "");
 
+    // 충돌 중인 저장소 - 같은 줄을 양쪽에서 고친 파일(덩어리 둘) + 상대가 지운 파일
+    public static string CreateConflict()
+    {
+        var root = Root + "-conflict";
+        Reset(root);
+        Directory.CreateDirectory(root);
+        void G(params string[] a)
+        {
+            var r = Ieummae.Core.Git.Git.RunAsync(root, a).GetAwaiter().GetResult();
+            if (!r.Ok && a[0] != "merge") throw new InvalidOperationException(r.Error);
+        }
+        void W(string p, string t) { Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(root, p))!); File.WriteAllText(Path.Combine(root, p), t); }
+        G("init", "-q", "-b", "main");
+        G("config", "user.name", "양털"); G("config", "user.email", "wool@example.com"); G("config", "commit.gpgsign", "false");
+        G("config", "merge.conflictStyle", "merge");
+        var baseText = "namespace Farm;\n\npublic static class Wool\n{\n    public const string Color = \"cream\";\n\n    public static int Buttons(int sheep) => sheep * 2;\n\n    public static string Name => \"양털\";\n}\n";
+        W("src/Wool.cs", baseText);
+        W("docs/옛 설명.md", "# 옛 설명\n");
+        G("add", "-A"); G("commit", "-q", "-m", "기본");
+        G("checkout", "-q", "-b", "feat/색");
+        W("src/Wool.cs", baseText.Replace("\"cream\"", "\"oatmeal\"").Replace("sheep * 2", "sheep * 4 // 앞뒤 두 개씩"));
+        File.Delete(Path.Combine(root, "docs", "옛 설명.md"));
+        G("add", "-A"); G("commit", "-q", "-m", "털실 색과 단추 수");
+        G("checkout", "-q", "main");
+        W("src/Wool.cs", baseText.Replace("\"cream\"", "\"snow\"").Replace("sheep * 2", "sheep * 3"));
+        W("docs/옛 설명.md", "# 옛 설명\n\n고친 내용\n");
+        G("add", "-A"); G("commit", "-q", "-m", "흰 털, 단추 셋");
+        G("merge", "feat/색");
+        return root;
+    }
+
     // 지난 실행 흔적 지우기 - .git 객체는 읽기 전용이라 속성부터 풂
     static void Reset(string dir)
     {

@@ -20,6 +20,10 @@
     <!-- 제목 줄 - 저장소·브랜치·경로, 원격 버튼, Commit, 더보기 -->
     <DockPanel Grid.Row="1" Margin="28,12,26,12">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+        <!-- 병합·리베이스 진행 중 - 충돌 해결 창으로 -->
+        <Button x:Name="ResolveButton" Classes="patch hot" IsVisible="{Binding Repo.HasOperation}" Margin="0,0,8,0">
+          <TextBlock Text="{Binding Repo.OperationText, StringFormat='{}{0} · Resolve'}" />
+        </Button>
         <Button x:Name="FetchButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
           <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Fetch" VerticalAlignment="Center" /></StackPanel>
         </Button>

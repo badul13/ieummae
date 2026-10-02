@@ -1,0 +1,132 @@
+<w:IeumWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:w="clr-namespace:Ieummae.App.Windows"
+        xmlns:theme="clr-namespace:Ieummae.App.Theme"
+        x:Class="Ieummae.App.Windows.ConflictWindow"
+        x:DataType="w:ConflictModel"
+        Width="1240" Height="820" MinWidth="900" MinHeight="560">
+  <w:IeumWindow.Styles>
+    <Style Selector="TextBlock.code">
+      <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="FontFeatures" Value="{DynamicResource NoLigatures}" />
+    </Style>
+    <Style Selector="TextBlock.toggle">
+      <Setter Property="FontFamily" Value="{DynamicResource FontHand}" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+    </Style>
+    <Style Selector="TextBlock.toggle.on">
+      <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+  </w:IeumWindow.Styles>
+  <Grid RowDefinitions="156,Auto,*">
+    <w:WoolTop />
+
+    <DockPanel Grid.Row="1" Margin="28,12,26,12">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+        <Button x:Name="AbortButton" Classes="patch" Content="Abort" IsVisible="{Binding OperationText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        <Button x:Name="SkipButton" Classes="patch" Content="Skip" IsVisible="{Binding IsRebase}" ToolTip.Tip="이 커밋 건너뛰기" />
+        <Button x:Name="ContinueButton" Classes="patch hot" Content="Continue" IsEnabled="{Binding CanContinue}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <TextBlock Text="Conflicts" FontSize="22" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding Repo.Name}" Classes="hand" VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+        <w:BranchChip DataContext="{Binding Repo}" />
+        <TextBlock Text="{Binding OperationText}" Classes="hand" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+      </StackPanel>
+    </DockPanel>
+
+    <Grid Grid.Row="2" ColumnDefinitions="340,*" Margin="20,0,20,20">
+      <theme:KnitPanel Yarn="Knit2" Padding="18,18,14,12">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="{Binding Files.Count, StringFormat='충돌 파일 {0}'}" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" Margin="4,0,0,6" />
+          <TextBlock DockPanel.Dock="Bottom" Text="{Binding Hint}" Classes="hand" FontSize="14" TextWrapping="Wrap" Margin="4,8,4,0" />
+          <ListBox ItemsSource="{Binding Files}" SelectedItem="{Binding Selected}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="w:ConflictFileRow">
+                <StackPanel Margin="6,5,10,5" ToolTip.Tip="{Binding File.Path}">
+                  <DockPanel>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding KindText}" Classes="hand" FontSize="13.5" />
+                    <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="{x:Static theme:DotsTrimming.End}" />
+                  </DockPanel>
+                  <TextBlock Text="{Binding Dir}" Classes="hand" FontSize="13.5" TextTrimming="{x:Static theme:DotsTrimming.Start}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </theme:KnitPanel>
+
+      <theme:KnitPanel Grid.Column="1" Margin="16,0,0,0" Padding="18,18,16,14">
+        <DockPanel>
+          <!-- 머리 - 파일 이름, 통째로 고르기 -->
+          <DockPanel DockPanel.Dock="Top" Margin="6,0,6,10">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" IsVisible="{Binding CanPickWhole}">
+              <Button x:Name="WholeOurs" Classes="patch" Content="{Binding WholeOurs}" Background="{DynamicResource OursBg}" />
+              <Button x:Name="WholeTheirs" Classes="patch" Content="{Binding WholeTheirs}" Background="{DynamicResource TheirsBg}" />
+            </StackPanel>
+            <TextBlock Text="{Binding Selected.Name, FallbackValue=''}" FontSize="18" VerticalAlignment="Center" />
+          </DockPanel>
+          <!-- 아래 - 덩어리 한꺼번에 고르기, 저장 -->
+          <DockPanel DockPanel.Dock="Bottom" Margin="6,10,6,0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+              <Button x:Name="MarkButton" Classes="patch" Content="Resolve as is" IsVisible="{Binding CanMarkAsIs}" ToolTip.Tip="파일 내용 그대로 해결 표시" />
+              <Button x:Name="SaveButton" Classes="patch hot" Content="Save &amp; Resolve" IsEnabled="{Binding CanSave}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center" IsVisible="{Binding CanSave}">
+              <TextBlock Text="모든 덩어리" Classes="hand" VerticalAlignment="Center" />
+              <Button x:Name="AllOurs" Classes="bare"><TextBlock Text="Ours" Classes="toggle" /></Button>
+              <Button x:Name="AllTheirs" Classes="bare"><TextBlock Text="Theirs" Classes="toggle" /></Button>
+              <Button x:Name="AllBoth" Classes="bare"><TextBlock Text="Both" Classes="toggle" /></Button>
+            </StackPanel>
+          </DockPanel>
+          <Panel>
+            <TextBlock Text="{Binding Notice}" Classes="hand" FontSize="17" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560" TextAlignment="Center"
+                       IsVisible="{Binding Notice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+              <ItemsControl ItemsSource="{Binding Blocks}" Margin="0,0,12,0">
+                <ItemsControl.DataTemplates>
+                  <!-- 공통 부분 - 흐린 코드 -->
+                  <DataTemplate DataType="w:CommonBlockView">
+                    <TextBlock Text="{Binding Text}" Classes="code" Foreground="{DynamicResource Muted}" Margin="10,4" />
+                  </DataTemplate>
+                  <!-- 충돌 덩어리 - 양쪽 + 고르기 -->
+                  <DataTemplate DataType="w:ConflictBlockView">
+                    <Border Background="{DynamicResource Surface}" CornerRadius="12" BorderBrush="{DynamicResource Stitch}" BorderThickness="1.5" Margin="0,6" Padding="12,10">
+                      <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="14">
+                          <TextBlock Text="{Binding Number}" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                          <Button Classes="bare" Click="OnPick" Tag="Ours"><TextBlock Text="Ours" Classes="toggle" Classes.on="{Binding IsOurs}" /></Button>
+                          <Button Classes="bare" Click="OnPick" Tag="Theirs"><TextBlock Text="Theirs" Classes="toggle" Classes.on="{Binding IsTheirs}" /></Button>
+                          <Button Classes="bare" Click="OnPick" Tag="Both"><TextBlock Text="Both" Classes="toggle" Classes.on="{Binding IsBoth}" /></Button>
+                          <Button Classes="bare" Click="OnPick" Tag="Custom"><TextBlock Text="Edit" Classes="toggle" Classes.on="{Binding IsCustom}" /></Button>
+                        </StackPanel>
+                        <Border Background="{DynamicResource OursBg}" CornerRadius="8" Padding="10,6" Opacity="{Binding OursOpacity}" IsVisible="{Binding !IsCustom}">
+                          <StackPanel>
+                            <TextBlock Text="{Binding OursHeader}" Classes="hand" FontSize="14" />
+                            <TextBlock Text="{Binding OursText}" Classes="code" />
+                          </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource TheirsBg}" CornerRadius="8" Padding="10,6" Opacity="{Binding TheirsOpacity}" IsVisible="{Binding !IsCustom}">
+                          <StackPanel>
+                            <TextBlock Text="{Binding TheirsHeader}" Classes="hand" FontSize="14" />
+                            <TextBlock Text="{Binding TheirsText}" Classes="code" />
+                          </StackPanel>
+                        </Border>
+                        <TextBox Classes="sew code" Text="{Binding Custom}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80"
+                                 IsVisible="{Binding IsCustom}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.DataTemplates>
+              </ItemsControl>
+            </ScrollViewer>
+          </Panel>
+        </DockPanel>
+      </theme:KnitPanel>
+    </Grid>
+  </Grid>
+</w:IeumWindow>

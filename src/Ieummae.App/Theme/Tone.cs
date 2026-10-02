@@ -54,6 +54,8 @@ public static class Tone
         // 이름표 - HEAD 브랜치 / 브랜치 / 원격 / 태그
         C("BadgeHead", dark ? "#4D3B2E" : "#EEDCCB"); C("BadgeBranch", p.Surface2);
         C("BadgeRemote", dark ? "#2F3A44" : "#E4ECF3"); C("BadgeTag", dark ? "#47402B" : "#F4EACB");
+        // 충돌 양쪽 - Ours 파랑, Theirs 분홍 (줄 추가·삭제 색과 겹치지 않게)
+        C("OursBg", dark ? "#2C3742" : "#E3EBF3"); C("TheirsBg", dark ? "#42303A" : "#F6E5EA");
         // 원격 버튼 천 - 다크는 바탕과 묻혀서 한 톤 밝게
         C("RemoteBg", dark ? "#3A3531" : p.Surface);
         // 뜨개 패널 실 색 - 흰 양털(로그) / 오트밀(Changes)
@@ -72,6 +74,8 @@ public static class Tone
             r["GS" + i] = new SolidColorBrush(Color.FromArgb(dark ? (byte)0x33 : (byte)0x26, c.R, c.G, c.B));
         }
         r["SystemAccentColor"] = Color.Parse(p.Accent);
+        // 코드 글꼴 합자 끔 - => 가 ⇒ 로 붙으면 실제 글자와 달라 보임
+        r["NoLigatures"] = new FontFeatureCollection { FontFeature.Parse("-liga"), FontFeature.Parse("-calt") };
         Changed?.Invoke();
     }
 

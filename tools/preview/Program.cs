@@ -18,6 +18,7 @@ var outDir = Path.GetFullPath(args.Length > 1 && args[1] != "-" ? args[1] : Path
 var filter = args.Length > 2 ? args[2] : null;
 Directory.CreateDirectory(outDir);
 var demo = Demo.Create();
+var conflict = Demo.CreateConflict();
 
 // 렌더링은 Skia 그대로 (실제 앱의 소프트웨어 렌더링과 같은 그림), 창 시스템만 헤드리스
 AppBuilder.Configure<App>()
@@ -54,6 +55,24 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
     ("commit-amend", "Commit · Amend 메시지", true, () => Open("commit", demo), w => { var m = (CommitModel)w.DataContext!; m.Message = "울타리 연결 준비\n\n- Flock 크기 계산을 Count 로\n- 메모 추가"; }),
     ("action-switch", "탐색기 Switch · 브랜치 고르기", false, () => Open("switch", demo), null),
     ("action-stash", "탐색기 Stash", true, () => Open("stash", demo), null),
+    ("conflict-light", "Conflicts · 덩어리 고르기", false, () => Open("conflicts", conflict), w =>
+    {
+        Pump(10);
+        var blocks = ((ConflictModel)w.DataContext!).Blocks.OfType<ConflictBlockView>().ToList();
+        if (blocks.Count > 0) blocks[0].Choice = Ieummae.Core.Conflict.Choice.Theirs;
+    }),
+    ("conflict-dark", "Conflicts · 직접 고치기", true, () => Open("conflicts", conflict), w =>
+    {
+        Pump(10);
+        var blocks = ((ConflictModel)w.DataContext!).Blocks.OfType<ConflictBlockView>().ToList();
+        if (blocks.Count > 0) blocks[0].Choice = Ieummae.Core.Conflict.Choice.Custom;
+    }),
+    ("conflict-deleted", "Conflicts · 상대가 지운 파일", false, () => Open("conflicts", conflict), w =>
+    {
+        var m = (ConflictModel)w.DataContext!;
+        m.Selected = m.Files.FirstOrDefault(f => f.Kind == Ieummae.Core.Git.ConflictKind.DeletedByThem);
+    }),
+    ("log-merging", "Log · Merge 중", true, () => Open("log", conflict), null),
 };
 // 대형 저장소 - IEUM_BIGREPO 지정 시 (커밋 수만 개 첫 화면 확인)
 if (Environment.GetEnvironmentVariable("IEUM_BIGREPO") is { Length: > 0 } big)

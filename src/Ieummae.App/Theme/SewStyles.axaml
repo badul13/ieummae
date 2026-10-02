@@ -136,4 +136,11 @@
   <Style Selector="Button.patch:disabled">
     <Setter Property="Opacity" Value="0.45" />
   </Style>
+
+  <!-- 코드 입력 칸 - 고정폭, 합자 끔 -->
+  <Style Selector="TextBox.sew.code">
+    <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontFeatures" Value="{DynamicResource NoLigatures}" />
+  </Style>
 </Styles>

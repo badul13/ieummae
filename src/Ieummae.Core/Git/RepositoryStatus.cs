@@ -119,6 +119,17 @@ public sealed partial class Repository
             await File.WriteAllTextAsync(msgFile, message, new UTF8Encoding(false), ct).ConfigureAwait(false);
             var args = new List<string> { "commit", "-F", msgFile, "--cleanup=strip" };
             if (amend) args.Add("--amend");
+            // 병합·체리픽 중 - 일부만 커밋(--only) 불가, 고른 파일을 스테이징하고 전체 커밋
+            if (await OperationAsync(ct).ConfigureAwait(false) != Operation.None)
+            {
+                var all = files.SelectMany(f => f.OrigPath is { } o ? new[] { f.Path, o } : [f.Path]).Distinct().ToList();
+                if (all.Count > 0)
+                {
+                    var add = await RunAsync(["add", "-A", "--pathspec-from-file=-", "--pathspec-file-nul"], new GitRunOptions { Input = Nul(all) }, ct).ConfigureAwait(false);
+                    if (!add.Ok) return add;
+                }
+                return await RunAsync(args, ct).ConfigureAwait(false);
+            }
             if (files.Count == 0)
                 return await RunAsync([.. args, "--only"], ct).ConfigureAwait(false);
             // 이름 바꾸기는 옛 경로도 같이 (옛 경로 삭제가 커밋에 들어가게)

@@ -27,6 +27,8 @@ public static class Launcher
         ["stash-list"] = ("Stash List", (m, _) => new ActionWindow(m, "Stash List", a => a.StashesAsync())),
         ["tags"] = ("Tags", (m, _) => new ActionWindow(m, "Tags", a => a.TagsAsync())),
         ["remotes"] = ("Remotes", (m, _) => new ActionWindow(m, "Remotes", a => a.RemotesAsync())),
+        // 충돌 해결 - 병합·리베이스 중 남은 충돌
+        ["conflicts"] = ("Conflicts", (m, _) => new ConflictWindow(new ConflictModel(m))),
     };
 
     public static Window Create(CommandLine cmd)
