@@ -41,6 +41,7 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
     ("diff-untracked", "Diff 새 파일 · 데모", false, () => Open("diff", Path.Combine(demo, "메모.txt")), w => Diff(w).IsSplit = false),
     ("message", "저장소 밖 안내", true, () => Open("log", Path.GetTempPath()), null),
     ("log-demo", "Log · 데모 (병합·태그·원격 없음)", false, () => Open("log", demo), null),
+    ("log-demo-dark", "Log · 데모 다크 (README 용)", true, () => Open("log", demo), null),
     ("log-file", "Log · 파일 하나 (src/Shear.cs)", true, () => Open("log", Path.Combine(demo, "src", "Shear.cs")), null),
     ("log-search", "Log · 검색 '울타리'", false, () => Open("log", demo), w => { var m = M<LogModel>(w); m.Search = "울타리"; m.ApplySearch(); }),
     ("dialog-reset", "대화 상자 · 고르기", true, () => Open("log", demo), w => _ = ((IeumWindow)w).ChooseAsync("Reset main", "main 을 a1b2c3d4 \"설계 문서 추가\" 로 이동", [
