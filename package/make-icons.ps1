@@ -1,9 +1,10 @@
-﻿# 아이콘 그리기 - 양털 구름 + 단추 눈 + 분홍 코 (시안의 양털 머리를 작게)
+﻿# 아이콘 그리기 - 앱 아이콘(다크 모드 눈 단추), 탐색기 표시 아이콘
 # 결과: src/Ieummae.App/Assets/ieummae.ico (16~256), package/Assets/*.png (패키지 로고)
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Drawing
 $root = Split-Path $PSScriptRoot -Parent
 
+# 앱 아이콘 - 다크 모드 양털 머리의 눈 단추 (상아 단추 + 진한 X 자 실)
 function Draw([int]$size) {
     $bmp = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -11,40 +12,37 @@ function Draw([int]$size) {
     $g.Clear([System.Drawing.Color]::Transparent)
     $s = $size / 64.0
     function C($hex) { [System.Drawing.ColorTranslator]::FromHtml($hex) }
-    $wool = New-Object System.Drawing.SolidBrush (C "#FFFDF7")
-    $shade = New-Object System.Drawing.SolidBrush (C "#D9CBB4")
-    $felt = New-Object System.Drawing.SolidBrush (C "#6B4B3D")
-    $pink = New-Object System.Drawing.SolidBrush (C "#E7A3A1")
-    $eye = New-Object System.Drawing.SolidBrush (C "#2C2420")
-
-    # 처진 귀 - 양쪽 아래로
-    $g.TranslateTransform(10 * $s, 34 * $s); $g.RotateTransform(-25); $g.FillEllipse($felt, -9 * $s, -4.5 * $s, 18 * $s, 9 * $s); $g.ResetTransform()
-    $g.TranslateTransform(54 * $s, 34 * $s); $g.RotateTransform(25); $g.FillEllipse($felt, -9 * $s, -4.5 * $s, 18 * $s, 9 * $s); $g.ResetTransform()
-
-    # 양털 구름 - 큰 원 둘레에 작은 원, 아래쪽 그림자 먼저
-    $bumps = @()
-    for ($i = 0; $i -lt 10; $i++) {
-        $a = $i * [Math]::PI * 2 / 10
-        $bumps += , @((32 + [Math]::Cos($a) * 19), (32 + [Math]::Sin($a) * 18))
+    # 다크 테마 Pupil(#BFAF98) 이 테두리, 면은 한 톤 밝게 (WoolHeader.DrawEye 와 같은 계산)
+    $rim = C "#BFAF98"
+    $face = [System.Drawing.Color]::FromArgb(255, [Math]::Min(255, $rim.R + 34), [Math]::Min(255, $rim.G + 32), [Math]::Min(255, $rim.B + 34))
+    $thread = C "#4A3C33"
+    $cx = 32 * $s; $cy = 31 * $s; $r = 27 * $s
+    # 그림자
+    $g.FillEllipse((New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(0x40, 0, 0, 0))), $cx - $r, $cy - $r + 2.6 * $s, 2 * $r, 2 * $r)
+    # 단추 면 + 테두리 + 안쪽 홈
+    $g.FillEllipse((New-Object System.Drawing.SolidBrush $face), $cx - $r, $cy - $r, 2 * $r, 2 * $r)
+    $g.DrawEllipse((New-Object System.Drawing.Pen $rim, ([Math]::Max(1, 2.6 * $s))), $cx - $r, $cy - $r, 2 * $r, 2 * $r)
+    if ($size -ge 24) {
+        $ri = $r - 7 * $s
+        $g.DrawEllipse((New-Object System.Drawing.Pen $rim, ([Math]::Max(1, 1.8 * $s))), $cx - $ri, $cy - $ri, 2 * $ri, 2 * $ri)
+        # 빛 반사 - 왼쪽 위 호
+        $hi = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(128, 255, 255, 255)), ([Math]::Max(1, 2.8 * $s))
+        $hi.StartCap = "Round"; $hi.EndCap = "Round"
+        $ra = $r - 4.5 * $s
+        $g.DrawArc($hi, $cx - $ra, $cy - $ra, 2 * $ra, 2 * $ra, 185, 80)
     }
-    foreach ($b in $bumps) { $g.FillEllipse($shade, ($b[0] - 9) * $s, ($b[1] - 8) * $s, 18 * $s, 18 * $s) }
-    $g.FillEllipse($shade, 13 * $s, 14 * $s, 38 * $s, 38 * $s)
-    foreach ($b in $bumps) { $g.FillEllipse($wool, ($b[0] - 9) * $s, ($b[1] - 9) * $s, 18 * $s, 18 * $s) }
-    $g.FillEllipse($wool, 13 * $s, 13 * $s, 38 * $s, 38 * $s)
-
-    # 단추 눈 - 작은 크기는 점만, 큰 크기는 X 자 실
-    foreach ($x in @(23, 41)) {
-        $g.FillEllipse($eye, ($x - 5.5) * $s, 27 * $s, 11 * $s, 11 * $s)
-        if ($size -ge 48) {
-            $pen = New-Object System.Drawing.Pen (C "#FFFDF7"), ([Math]::Max(1, 1.3 * $s))
-            $d = 2.2 * $s; $cx = $x * $s; $cy = 32.5 * $s
-            $g.DrawLine($pen, $cx - $d, $cy - $d, $cx + $d, $cy + $d)
-            $g.DrawLine($pen, $cx + $d, $cy - $d, $cx - $d, $cy + $d)
+    # X 자 실 + 구멍 넷
+    $hd = 6.2 * $s
+    $pen = New-Object System.Drawing.Pen $thread, ([Math]::Max(1.2, 3.4 * $s))
+    $pen.StartCap = "Round"; $pen.EndCap = "Round"
+    $g.DrawLine($pen, $cx - $hd, $cy - $hd, $cx + $hd, $cy + $hd)
+    $g.DrawLine($pen, $cx + $hd, $cy - $hd, $cx - $hd, $cy + $hd)
+    if ($size -ge 32) {
+        $hole = New-Object System.Drawing.SolidBrush $rim
+        foreach ($d in @(@(-1, -1), @(1, -1), @(-1, 1), @(1, 1))) {
+            $g.FillEllipse($hole, $cx + $d[0] * $hd - 2.4 * $s, $cy + $d[1] * $hd - 2.4 * $s, 4.8 * $s, 4.8 * $s)
         }
     }
-    # 분홍 코
-    $pts = [System.Drawing.PointF[]]@([System.Drawing.PointF]::new(28 * $s, 40 * $s), [System.Drawing.PointF]::new(36 * $s, 40 * $s), [System.Drawing.PointF]::new(32 * $s, 44.5 * $s))
-    $g.FillPolygon($pink, $pts)
     $g.Dispose()
     return $bmp
 }

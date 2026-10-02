@@ -1,11 +1,10 @@
-<w:IeumWindow xmlns="https://github.com/avaloniaui"
+<w:Page xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
         xmlns:theme="clr-namespace:Ieummae.App.Theme"
-        x:Class="Ieummae.App.Windows.ConflictWindow"
-        x:DataType="w:ConflictModel"
-        Width="1240" Height="820" MinWidth="900" MinHeight="560">
-  <w:IeumWindow.Styles>
+        x:Class="Ieummae.App.Windows.ConflictPage"
+        x:DataType="w:ConflictModel"        >
+  <w:Page.Styles>
     <Style Selector="TextBlock.code">
       <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
       <Setter Property="FontSize" Value="13" />
@@ -21,11 +20,10 @@
       <Setter Property="Foreground" Value="{DynamicResource Accent}" />
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
-  </w:IeumWindow.Styles>
-  <Grid RowDefinitions="156,Auto,*">
-    <w:WoolTop />
+  </w:Page.Styles>
+  <Grid RowDefinitions="Auto,*">
 
-    <DockPanel Grid.Row="1" Margin="28,12,26,12">
+    <DockPanel Margin="28,12,26,12">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
         <Button x:Name="AbortButton" Classes="patch" Content="Abort" IsVisible="{Binding OperationText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
         <Button x:Name="SkipButton" Classes="patch" Content="Skip" IsVisible="{Binding IsRebase}" ToolTip.Tip="이 커밋 건너뛰기" />
@@ -39,7 +37,7 @@
       </StackPanel>
     </DockPanel>
 
-    <Grid Grid.Row="2" ColumnDefinitions="340,*" Margin="20,0,20,20">
+    <Grid Grid.Row="1" ColumnDefinitions="340,*" Margin="20,0,20,20">
       <theme:KnitPanel Yarn="Knit2" Padding="18,18,14,12">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" Text="{Binding Files.Count, StringFormat='충돌 파일 {0}'}" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" Margin="4,0,0,6" />
@@ -129,4 +127,4 @@
       </theme:KnitPanel>
     </Grid>
   </Grid>
-</w:IeumWindow>
+</w:Page>

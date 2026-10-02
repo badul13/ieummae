@@ -1,16 +1,15 @@
-<w:IeumWindow xmlns="https://github.com/avaloniaui"
+<w:Page xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
-        x:Class="Ieummae.App.Windows.MessageWindow"
-        Width="640" Height="360">
+        x:Class="Ieummae.App.Windows.MessagePage"
+        >
   <!-- 안내 창 - 양털 머리 아래 천 조각 카드 하나 -->
-  <Grid RowDefinitions="156,*">
-    <w:WoolTop ClipToBounds="True" />
-    <ContentControl Grid.Row="1" Classes="patch hot" Margin="24,12,24,24" Padding="26,20">
+  <Grid RowDefinitions="*">
+    <ContentControl Classes="patch hot" Margin="24,12,24,24" Padding="26,20">
       <StackPanel Spacing="10" VerticalAlignment="Center">
         <TextBlock x:Name="TitleText" FontSize="22" />
         <TextBlock x:Name="DetailText" Classes="hand" TextWrapping="Wrap" />
       </StackPanel>
     </ContentControl>
   </Grid>
-</w:IeumWindow>
+</w:Page>

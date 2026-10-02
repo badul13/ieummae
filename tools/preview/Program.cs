@@ -42,7 +42,7 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
     ("message", "저장소 밖 안내", true, () => Open("log", Path.GetTempPath()), null),
     ("log-demo", "Log · 데모 (병합·태그·원격 없음)", false, () => Open("log", demo), null),
     ("log-file", "Log · 파일 하나 (src/Shear.cs)", true, () => Open("log", Path.Combine(demo, "src", "Shear.cs")), null),
-    ("log-search", "Log · 검색 '울타리'", false, () => Open("log", demo), w => { var m = (LogModel)w.DataContext!; m.Search = "울타리"; m.ApplySearch(); }),
+    ("log-search", "Log · 검색 '울타리'", false, () => Open("log", demo), w => { var m = M<LogModel>(w); m.Search = "울타리"; m.ApplySearch(); }),
     ("dialog-reset", "대화 상자 · 고르기", true, () => Open("log", demo), w => _ = ((IeumWindow)w).ChooseAsync("Reset main", "main 을 a1b2c3d4 \"설계 문서 추가\" 로 이동", [
         ("Soft", "커밋만 되돌림 - 변경 내용은 스테이징된 채로 남음"),
         ("Mixed", "커밋과 스테이징 되돌림 - 변경 내용은 작업 트리에 남음"),
@@ -54,24 +54,24 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
         await Task.Delay(Timeout.Infinite, ct);
         return new Ieummae.Core.Git.GitResult(0, "", "");
     })),
-    ("commit-amend", "Commit · Amend 메시지", true, () => Open("commit", demo), w => { var m = (CommitModel)w.DataContext!; m.Message = "울타리 연결 준비\n\n- Flock 크기 계산을 Count 로\n- 메모 추가"; }),
+    ("commit-amend", "Commit · Amend 메시지", true, () => Open("commit", demo), w => { var m = M<CommitModel>(w); m.Message = "울타리 연결 준비\n\n- Flock 크기 계산을 Count 로\n- 메모 추가"; }),
     ("action-switch", "탐색기 Switch · 브랜치 고르기", false, () => Open("switch", demo), null),
     ("action-stash", "탐색기 Stash", true, () => Open("stash", demo), null),
     ("conflict-light", "Conflicts · 덩어리 고르기", false, () => Open("conflicts", conflict), w =>
     {
         Pump(10);
-        var blocks = ((ConflictModel)w.DataContext!).Blocks.OfType<ConflictBlockView>().ToList();
+        var blocks = (M<ConflictModel>(w)).Blocks.OfType<ConflictBlockView>().ToList();
         if (blocks.Count > 0) blocks[0].Choice = Ieummae.Core.Conflict.Choice.Theirs;
     }),
     ("conflict-dark", "Conflicts · 직접 고치기", true, () => Open("conflicts", conflict), w =>
     {
         Pump(10);
-        var blocks = ((ConflictModel)w.DataContext!).Blocks.OfType<ConflictBlockView>().ToList();
+        var blocks = (M<ConflictModel>(w)).Blocks.OfType<ConflictBlockView>().ToList();
         if (blocks.Count > 0) blocks[0].Choice = Ieummae.Core.Conflict.Choice.Custom;
     }),
     ("conflict-deleted", "Conflicts · 상대가 지운 파일", false, () => Open("conflicts", conflict), w =>
     {
-        var m = (ConflictModel)w.DataContext!;
+        var m = M<ConflictModel>(w);
         m.Selected = m.Files.FirstOrDefault(f => f.Kind == Ieummae.Core.Git.ConflictKind.DeletedByThem);
     }),
     ("log-merging", "Log · Merge 중", true, () => Open("log", conflict), null),
@@ -107,6 +107,9 @@ File.WriteAllText(Path.Combine(outDir, "index.html"), Page(shots));
 Console.WriteLine($"{shots.Count}장 {stamp} → {Path.Combine(outDir, "index.html")}");
 
 static Window Open(string cmd, string path) => Launcher.Create(new CommandLine(cmd, path));
+
+// 지금 화면의 상태 모델 - 창 하나에 화면이 바뀌므로 창이 아니라 화면의 DataContext
+static T M<T>(Window w) => (T)((MainWindow)w).Current!.DataContext!;
 
 static DiffView Diff(Window w) => w.GetVisualDescendants().OfType<DiffView>().First();
 

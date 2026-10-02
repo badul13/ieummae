@@ -1,11 +1,10 @@
-<w:IeumWindow xmlns="https://github.com/avaloniaui"
+<w:Page xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
         xmlns:theme="clr-namespace:Ieummae.App.Theme"
-        x:Class="Ieummae.App.Windows.BlameWindow"
-        x:DataType="w:RepoModel"
-        Width="1240" Height="820" MinWidth="900" MinHeight="560">
-  <w:IeumWindow.Styles>
+        x:Class="Ieummae.App.Windows.BlamePage"
+        x:DataType="w:RepoModel"        >
+  <w:Page.Styles>
     <Style Selector="TextBlock.code">
       <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
       <Setter Property="FontSize" Value="13" />
@@ -14,11 +13,10 @@
     <Style Selector="Border.alt"><Setter Property="Background" Value="{DynamicResource Surface2}" /></Style>
     <Style Selector="Border.mine"><Setter Property="Background" Value="{DynamicResource AddBg}" /></Style>
     <Style Selector="ListBox.blame ListBoxItem /template/ ContentPresenter"><Setter Property="CornerRadius" Value="0" /></Style>
-  </w:IeumWindow.Styles>
+  </w:Page.Styles>
   <!-- 줄마다 마지막 수정 커밋 - 같은 커밋이 이어지는 묶음마다 첫 줄에만 정보, 묶음끼리 바탕 번갈아 -->
-  <Grid RowDefinitions="156,Auto,*">
-    <w:WoolTop />
-    <DockPanel Grid.Row="1" Margin="28,12,26,12">
+  <Grid RowDefinitions="Auto,*">
+    <DockPanel Margin="28,12,26,12">
       <Button x:Name="LogButton" DockPanel.Dock="Right" Classes="patch" Content="Log" ToolTip.Tip="이 파일의 로그" />
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
         <TextBlock Text="Blame" FontSize="22" VerticalAlignment="Center" />
@@ -27,7 +25,7 @@
         <TextBlock x:Name="CountText" Classes="hand" VerticalAlignment="Center" />
       </StackPanel>
     </DockPanel>
-    <theme:KnitPanel Grid.Row="2" Margin="20,0,20,20" Padding="14,16,14,12">
+    <theme:KnitPanel Grid.Row="1" Margin="20,0,20,20" Padding="14,16,14,12">
       <Panel>
         <TextBlock x:Name="Notice" Classes="hand" FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center" Text="불러오는 중" />
         <ListBox x:Name="Lines" Classes="blame" ScrollViewer.HorizontalScrollBarVisibility="Auto">
@@ -51,4 +49,4 @@
       </Panel>
     </theme:KnitPanel>
   </Grid>
-</w:IeumWindow>
+</w:Page>

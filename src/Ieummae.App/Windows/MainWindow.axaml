@@ -1,0 +1,20 @@
+<w:IeumWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:w="clr-namespace:Ieummae.App.Windows"
+        x:Class="Ieummae.App.Windows.MainWindow"
+        Width="1240" Height="820" MinWidth="900" MinHeight="560">
+  <!-- 창 하나 - 양털 머리는 그대로, 아래 화면만 바뀜
+       화면을 옮기면 양털 왼쪽 아래에 뒤로 버튼 (아래 화면 배치는 그대로) -->
+  <Grid RowDefinitions="156,*">
+    <w:WoolTop />
+    <Button x:Name="BackButton" Classes="patch" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="22,92,0,0" Padding="12,7,16,7"
+            IsVisible="False" ToolTip.Tip="Alt+←">
+      <StackPanel Orientation="Horizontal" Spacing="7">
+        <Path Width="6" Height="10" Stretch="Fill" Stroke="{DynamicResource Text}" StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"
+              Data="M6 0L0 5L6 10" VerticalAlignment="Center" />
+        <TextBlock x:Name="BackText" VerticalAlignment="Center" />
+      </StackPanel>
+    </Button>
+    <ContentControl x:Name="PageHost" Grid.Row="1" />
+  </Grid>
+</w:IeumWindow>

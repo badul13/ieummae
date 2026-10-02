@@ -1,21 +1,19 @@
-<w:IeumWindow xmlns="https://github.com/avaloniaui"
+<w:Page xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
         xmlns:v="clr-namespace:Ieummae.App.Views"
         xmlns:git="clr-namespace:Ieummae.Core.Git;assembly=Ieummae.Core"
         xmlns:theme="clr-namespace:Ieummae.App.Theme"
-        x:Class="Ieummae.App.Windows.ChangesWindow"
-        x:DataType="w:RepoModel"
-        Width="1240" Height="800">
+        x:Class="Ieummae.App.Windows.ChangesPage"
+        x:DataType="w:RepoModel"        >
   <!-- 두 커밋 비교 - 변경 파일 목록 + 고른 파일 diff -->
-  <Grid RowDefinitions="156,Auto,*">
-    <w:WoolTop />
-    <StackPanel Grid.Row="1" Margin="28,12,26,12" Orientation="Horizontal" Spacing="10" Height="40">
+  <Grid RowDefinitions="Auto,*">
+    <StackPanel Margin="28,12,26,12" Orientation="Horizontal" Spacing="10" Height="40">
       <TextBlock Text="Compare" FontSize="22" VerticalAlignment="Center" />
       <TextBlock Text="{Binding Name}" Classes="hand" VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
       <TextBlock x:Name="SpecText" Classes="hand" VerticalAlignment="Center" Margin="6,0,0,0" />
     </StackPanel>
-    <Grid Grid.Row="2" ColumnDefinitions="360,*" Margin="20,0,20,20">
+    <Grid Grid.Row="1" ColumnDefinitions="360,*" Margin="20,0,20,20">
       <theme:KnitPanel Yarn="Knit2" Padding="20,18,14,12">
         <DockPanel>
           <TextBlock x:Name="TitleText" DockPanel.Dock="Top" Text="Changes" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" Margin="0,0,0,6" />
@@ -42,4 +40,4 @@
       </theme:KnitPanel>
     </Grid>
   </Grid>
-</w:IeumWindow>
+</w:Page>

@@ -9,31 +9,36 @@ using Ieummae.Core.Log;
 
 namespace Ieummae.App.Windows;
 
-// 로그 창 - 커밋 목록, 행 우클릭 동작, 변경 파일 diff
-public partial class LogWindow : IeumWindow
+// 로그 화면 - 커밋 목록, 행 우클릭 동작, 변경 파일 diff. 다른 화면에서 돌아오면 새로 고침
+public partial class LogPage : Page
 {
     public LogModel? Model { get; }
     Repository Repo => Model!.Repo.Repo;
 
-    public LogWindow() : this(null) { }
+    public LogPage() : this(null) { }
 
-    public LogWindow(LogModel? model)
+    public override string PageTitle => Model?.HasPath == true ? "Log · " + Model.PathText : "Log";
+
+    public LogPage(LogModel? model)
     {
         InitializeComponent();
         DataContext = Model = model;
         if (model is null) return;
 
-        Opened += (_, _) => _ = Task.WhenAll(model.LoadAsync(), model.Repo.LoadAsync());
-        var rowMenu = new MenuFlyout();
-        rowMenu.Opening += (_, _) => BuildRowMenu(rowMenu);
-        List.ContextFlyout = rowMenu;
+        Shown += async first =>
+        {
+            if (!first) { await ReloadAsync(); return; }
+            await Task.WhenAll(model.LoadAsync(), model.Repo.LoadAsync());
+            // 탐색기 메뉴의 Pull 등 - 로그가 뜬 뒤 바로 실행
+            if (StartAction is { } start && Actions is { } act) { StartAction = null; Run(() => start(act)); }
+        };
+        AttachMenu(List, BuildRowMenu);
         FileList.DoubleTapped += (_, _) => OpenDiff();
         FileList.KeyDown += (_, e) => { if (e.Key == Key.Enter) OpenDiff(); };
         CommitButton.Click += (_, _) => OpenCommit();
-        KeyDown += (_, e) => { if (e.Key == Key.F5 && !DialogOpen) _ = ReloadAsync(); };
         // 테마 전환 - 이름표 점 색은 만들 때 정해지므로 목록 다시 연결
-        Tone.Changed += RebindRows;
-        Closed += (_, _) => Tone.Changed -= RebindRows;
+        AttachedToVisualTree += (_, _) => Tone.Changed += RebindRows;
+        DetachedFromVisualTree += (_, _) => Tone.Changed -= RebindRows;
 
         // 원격·브랜치 동작 - 끝나면 새로 고침
         var act = new Actions(this, model.Repo);
@@ -61,7 +66,7 @@ public partial class LogWindow : IeumWindow
         Add("Remotes", act.RemotesAsync);
         more.Items.Add(new Separator());
         var settings = new MenuItem { Header = "설정" };
-        settings.Click += (_, _) => new SettingsWindow(model.Repo.Repo).Show();
+        settings.Click += (_, _) => Navigate(new SettingsPage(model.Repo.Repo));
         more.Items.Add(settings);
         MoreButton.Flyout = more;
         act.OnConflicts = () => { OpenConflicts(); return Task.CompletedTask; };
@@ -70,6 +75,14 @@ public partial class LogWindow : IeumWindow
     }
 
     public Actions? Actions { get; }
+
+    // 처음 보일 때 한 번 실행할 동작
+    public Func<Actions, Task<bool>>? StartAction { get; set; }
+
+    public override void OnKey(KeyEventArgs e)
+    {
+        if (e.Key == Key.F5) { _ = ReloadAsync(); e.Handled = true; }
+    }
 
     // 동작 하나 실행 - 대화 상자 열려 있으면 무시, 끝나면 목록·브랜치 새로 고침
     async void Run(Func<Task<bool>> action)
@@ -98,22 +111,12 @@ public partial class LogWindow : IeumWindow
     {
         if (Model?.Selected is not { } row || FileList.SelectedItem is not ChangedFile f) return;
         var e = row.Entry;
-        new DiffWindow(Model.Repo, new DiffSpec.Commit(e.Hash, e.Parents.FirstOrDefault()), f.Path, $"{e.Short} · {e.Subject}").Show();
+        Navigate(new DiffPage(Model.Repo, new DiffSpec.Commit(e.Hash, e.Parents.FirstOrDefault()), f.Path, $"{e.Short} · {e.Subject}"));
     }
 
-    void OpenConflicts()
-    {
-        var w = new ConflictWindow(new ConflictModel(Model!.Repo));
-        w.Closed += (_, _) => _ = ReloadAsync();
-        w.Show();
-    }
+    void OpenConflicts() => Navigate(new ConflictPage(new ConflictModel(Model!.Repo)));
 
-    void OpenCommit()
-    {
-        var w = new CommitWindow(new CommitModel(Model!.Repo, null));
-        w.Closed += (_, _) => _ = ReloadAsync();
-        w.Show();
-    }
+    void OpenCommit() => Navigate(new CommitPage(new CommitModel(Model!.Repo, null)));
 
     List<LogRow> SelectedRows() => List.SelectedItems?.OfType<LogRow>().ToList() ?? [];
 
@@ -176,7 +179,7 @@ public partial class LogWindow : IeumWindow
     }
 
     void OpenCompare(LogEntry older, LogEntry newer) =>
-        new ChangesWindow(Model!.Repo, new DiffSpec.Range(older.Hash, newer.Hash), $"{older.Short} → {newer.Short}").Show();
+        Navigate(new ChangesPage(Model!.Repo, new DiffSpec.Range(older.Hash, newer.Hash), $"{older.Short} → {newer.Short}"));
 
     // 동작 실행 - 실패면 메시지, 성공이든 실패든 목록 새로 고침 (일부만 적용된 경우 대비)
     async Task Act(string what, Task<GitResult> run)

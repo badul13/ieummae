@@ -7,39 +7,39 @@ using Ieummae.Core.Log;
 
 namespace Ieummae.App.Windows;
 
-// 커밋 창 - 고른 파일만 커밋, 파일 우클릭으로 되돌리기·삭제·ignore
-public partial class CommitWindow : IeumWindow
+// 커밋 화면 - 고른 파일만 커밋, 파일 우클릭으로 되돌리기·삭제·ignore. 커밋 끝나면 앞 화면(로그)으로
+public partial class CommitPage : Page
 {
     public CommitModel? Model { get; }
     Repository Repo => Model!.Repo.Repo;
 
-    public CommitWindow() : this(null) { }
+    public CommitPage() : this(null) { }
 
-    public CommitWindow(CommitModel? model)
+    public override string PageTitle => "Commit";
+
+    public CommitPage(CommitModel? model)
     {
         InitializeComponent();
         DataContext = Model = model;
         if (model is null) return;
 
-        Opened += async (_, _) => { await model.LoadAsync(); SelectFirst(); MessageBox.Focus(); };
+        Shown += async first =>
+        {
+            if (first) { await Task.WhenAll(model.LoadAsync(), model.Repo.LoadAsync()); SelectFirst(); MessageBox.Focus(); }
+            else await RefreshAsync();
+        };
         FileList.SelectionChanged += (_, _) => ShowDiff();
         AllButton.Click += (_, _) => model.ToggleAll();
         RefreshButton.Click += async (_, _) => await RefreshAsync();
-        LogButton.Click += (_, _) => new LogWindow(new LogModel(model.Repo, new LogQuery())).Show();
+        // 로그에서 왔으면 뒤로, 아니면(탐색기에서 바로 연 경우) 로그로 이동
+        LogButton.Click += (_, _) =>
+        {
+            if (Host.Previous is LogPage) GoBack();
+            else Navigate(new LogPage(new LogModel(model.Repo, new LogQuery())));
+        };
         CommitButton.Click += async (_, _) => await CommitAsync();
         HistoryButton.Click += (_, _) => ShowHistory();
-        ResolveButton.Click += (_, _) =>
-        {
-            var w = new ConflictWindow(new ConflictModel(model.Repo));
-            w.Closed += async (_, _) => await RefreshAsync();
-            w.Show();
-        };
-        KeyDown += async (_, e) =>
-        {
-            if (DialogOpen) return;
-            if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.Control && model.CanCommit) { e.Handled = true; await CommitAsync(); }
-            else if (e.Key == Key.F5) await RefreshAsync();
-        };
+        ResolveButton.Click += (_, _) => Navigate(new ConflictPage(new ConflictModel(model.Repo)));
         // 스페이스 - 고른 줄들 체크 전환
         FileList.KeyDown += (_, e) =>
         {
@@ -49,9 +49,13 @@ public partial class CommitWindow : IeumWindow
             foreach (var r in rows.Where(r => r.CanCheck)) r.Checked = to;
             e.Handled = true;
         };
-        var menu = new MenuFlyout();
-        menu.Opening += (_, _) => BuildFileMenu(menu);
-        FileList.ContextFlyout = menu;
+        AttachMenu(FileList, BuildFileMenu);
+    }
+
+    public override void OnKey(KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.Control && Model!.CanCommit) { e.Handled = true; _ = CommitAsync(); }
+        else if (e.Key == Key.F5) { e.Handled = true; _ = RefreshAsync(); }
     }
 
     List<FileRow> Selected() => FileList.SelectedItems?.OfType<FileRow>().ToList() ?? [];
@@ -96,7 +100,8 @@ public partial class CommitWindow : IeumWindow
                 // 커밋은 됐으므로 Push 실패해도 창은 남겨 다시 시도할 수 있게
                 if (!r.Ok) { m.Message = ""; m.Amend = false; await RefreshAsync(); return; }
             }
-            Close();
+            // 커밋 끝 - 앞 화면으로 (탐색기에서 바로 열었으면 창 닫힘)
+            GoBack();
         }
         finally { m.Busy = false; }
     }
@@ -133,7 +138,7 @@ public partial class CommitWindow : IeumWindow
         if (rows.Count == 1)
         {
             var f = rows[0].File;
-            Item("Diff", () => { new DiffWindow(Model!.Repo, null, f.Path, "작업 트리 · HEAD 대비").Show(); return Task.CompletedTask; });
+            Item("Diff", () => { Navigate(new DiffPage(Model!.Repo, null, f.Path, "작업 트리 · HEAD 대비")); return Task.CompletedTask; });
             Item("탐색기에서 보기", () => { OpenInExplorer(f.Path); return Task.CompletedTask; });
             menu.Items.Add(new Separator());
         }

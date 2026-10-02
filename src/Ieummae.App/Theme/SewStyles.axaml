@@ -143,4 +143,20 @@
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontFeatures" Value="{DynamicResource NoLigatures}" />
   </Style>
+
+  <!-- 창 버튼 - 최소화·최대화·닫기 (닫기는 누를 때 붉게) -->
+  <Style Selector="Button.caption">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Height" Value="40" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Content="{TemplateBinding Content}" Background="{TemplateBinding Background}"
+                          HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button.caption:pointerover"><Setter Property="Background" Value="{DynamicResource Surface2}" /></Style>
+  <Style Selector="Button.caption.close:pointerover"><Setter Property="Background" Value="#C9483E" /></Style>
+  <Style Selector="Button.caption.close:pointerover Path"><Setter Property="Stroke" Value="White" /></Style>
 </Styles>

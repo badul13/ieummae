@@ -5,19 +5,21 @@ using Ieummae.Core.Git;
 
 namespace Ieummae.App.Windows;
 
-// 충돌 해결 창 - 파일마다 덩어리별 Ours·Theirs·Both·직접 고치기, 다 풀면 Continue
-public partial class ConflictWindow : IeumWindow
+// 충돌 해결 화면 - 파일마다 덩어리별 Ours·Theirs·Both·직접 고치기, 다 풀면 Continue
+public partial class ConflictPage : Page
 {
     public ConflictModel? Model { get; }
 
-    public ConflictWindow() : this(null) { }
+    public ConflictPage() : this(null) { }
 
-    public ConflictWindow(ConflictModel? model)
+    public override string PageTitle => "Conflicts";
+
+    public ConflictPage(ConflictModel? model)
     {
         InitializeComponent();
         DataContext = Model = model;
         if (model is null) return;
-        Opened += async (_, _) => await Task.WhenAll(model.LoadAsync(), model.Repo.LoadAsync());
+        Shown += async _ => await Task.WhenAll(model.LoadAsync(), model.Repo.LoadAsync());
         SaveButton.Click += async (_, _) => await Step("Resolve", model.SaveAsync());
         MarkButton.Click += async (_, _) => await Step("Resolve", model.SaveAsync());
         WholeOurs.Click += async (_, _) => await Step("Ours", model.TakeWholeAsync(ours: true));
@@ -50,7 +52,7 @@ public partial class ConflictWindow : IeumWindow
         await Model!.LoadAsync();
     }
 
-    // 계속·건너뛰기·취소 - 리베이스는 다음 커밋에서 또 충돌할 수 있으니 목록 다시 확인, 끝나면 창 닫음
+    // 계속·건너뛰기·취소 - 리베이스는 다음 커밋에서 또 충돌할 수 있으니 목록 다시 확인, 끝나면 앞 화면으로
     async Task FinishAsync(Task<GitResult> run, string what)
     {
         var r = await run;
@@ -59,7 +61,9 @@ public partial class ConflictWindow : IeumWindow
         if (Model.Operation == Operation.None && Model.Files.Count == 0)
         {
             if (!r.Ok) await AlertAsync(what + " 실패", r.Message);
-            Close();
+            // 앞 화면 있으면 돌아가고, 탐색기에서 바로 열었으면 로그로
+            if (Host.Previous is not null) GoBack();
+            else Host.Replace(new LogPage(new LogModel(Model.Repo, new Ieummae.Core.Log.LogQuery())));
             return;
         }
         if (!r.Ok && Model.Files.Count == 0) await AlertAsync(what + " 실패", r.Message);

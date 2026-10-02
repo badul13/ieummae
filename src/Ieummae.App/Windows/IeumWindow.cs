@@ -8,7 +8,7 @@ using Ieummae.Core.Git;
 namespace Ieummae.App.Windows;
 
 // 창 공통 - 제목 표시줄을 내용 영역으로 확장 (양털 머리가 맨 위까지), 창 안 대화 상자
-public class IeumWindow : Window
+public class IeumWindow : Window, IDialogs
 {
     protected override Type StyleKeyOverride => typeof(Window);
 
@@ -40,6 +40,21 @@ public class IeumWindow : Window
     }
 
     public bool DialogOpen => _dim.IsVisible;
+
+    // 우클릭 메뉴 - 누를 때마다 지금 고른 항목 기준으로 새로 만들어 마우스 위치에 띄움
+    // (ContextFlyout + Opening 은 처음에 항목이 비어 있으면 아예 열리지 않음)
+    public void AttachMenu(Control target, Action<MenuFlyout> build)
+    {
+        target.ContextRequested += (_, e) =>
+        {
+            if (DialogOpen) return;
+            var menu = new MenuFlyout();
+            build(menu);
+            if (menu.Items.Count == 0) return;
+            menu.ShowAt(target, showAtPointer: true);
+            e.Handled = true;
+        };
+    }
 
     void OnKey(object? s, KeyEventArgs e)
     {

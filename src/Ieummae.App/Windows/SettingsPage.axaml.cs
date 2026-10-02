@@ -5,15 +5,17 @@ using Ieummae.Core.Git;
 
 namespace Ieummae.App.Windows;
 
-public partial class SettingsWindow : IeumWindow
+// 설정 화면 - 저장하거나 취소하면 앞 화면으로
+public partial class SettingsPage : Page
 {
-    public SettingsWindow() : this(null) { }
+    public SettingsPage() : this(null) { }
+
+    public override string PageTitle => "설정";
 
     // repo - 저장소 안에서 열었으면 그 저장소 설정 칸도
-    public SettingsWindow(Repository? repo)
+    public SettingsPage(Repository? repo)
     {
         InitializeComponent();
-        Title = "ieummae · 설정";
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         LocalCard.IsVisible = repo is not null;
         if (repo is not null) LocalTitle.Text = $"커밋 작성자 · {repo.Name}";
@@ -21,8 +23,9 @@ public partial class SettingsWindow : IeumWindow
         DiffSplit.IsChecked = Settings.DiffSplit;
         DiffWs.IsChecked = Settings.DiffIgnoreWhitespace;
 
-        Opened += async (_, _) =>
+        Shown += async first =>
         {
+            if (!first) return;
             GlobalName.Text = await GitTools.GetConfigAsync(home, "--global", "user.name");
             GlobalEmail.Text = await GitTools.GetConfigAsync(home, "--global", "user.email");
             if (repo is null) return;
@@ -31,7 +34,7 @@ public partial class SettingsWindow : IeumWindow
             LocalName.PlaceholderText = GlobalName.Text is { Length: > 0 } g ? $"이름 - 비우면 {g}" : "이름";
             LocalEmail.PlaceholderText = GlobalEmail.Text is { Length: > 0 } m ? $"메일 - 비우면 {m}" : "메일";
         };
-        CancelButton.Click += (_, _) => Close();
+        CancelButton.Click += (_, _) => GoBack();
         SaveButton.Click += async (_, _) =>
         {
             // git 설정 - 바뀐 칸만
@@ -55,7 +58,7 @@ public partial class SettingsWindow : IeumWindow
             var app = Application.Current!;
             bool system = app.PlatformSettings?.GetColorValues().ThemeVariant == Avalonia.Platform.PlatformThemeVariant.Dark;
             Tone.Apply(app, Settings.Theme switch { "light" => false, "dark" => true, _ => system });
-            Close();
+            GoBack();
         };
     }
 }

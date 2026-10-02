@@ -1,13 +1,12 @@
-<w:IeumWindow xmlns="https://github.com/avaloniaui"
+<w:Page xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
-        x:Class="Ieummae.App.Windows.SettingsWindow"
-        Width="760" Height="860">
+        x:Class="Ieummae.App.Windows.SettingsPage"
+        >
   <!-- 설정 - git 이름·메일(전체·이 저장소), 테마, diff 보기 기본값 -->
-  <Grid RowDefinitions="156,Auto,*,Auto">
-    <w:WoolTop ClipToBounds="True" />
-    <TextBlock Grid.Row="1" Text="설정" FontSize="22" Margin="28,12,26,12" />
-    <ScrollViewer Grid.Row="2" Margin="20,0,20,0">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <TextBlock Text="설정" FontSize="22" Margin="28,12,26,12" />
+    <ScrollViewer Grid.Row="1" Margin="20,0,20,0">
       <StackPanel Spacing="14">
         <ContentControl Classes="patch hot" Padding="24,18">
           <StackPanel Spacing="8">
@@ -41,9 +40,9 @@
         </ContentControl>
       </StackPanel>
     </ScrollViewer>
-    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="20,14,24,20">
+    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="20,14,24,20">
       <Button x:Name="CancelButton" Classes="patch" Content="Cancel" />
       <Button x:Name="SaveButton" Classes="patch hot" Content="Save" />
     </StackPanel>
   </Grid>
-</w:IeumWindow>
+</w:Page>

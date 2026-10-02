@@ -15,20 +15,27 @@ public sealed record BlameRow(BlameLine Line, bool First, bool Alt)
     public string Code => Line.Text.Replace("\t", "    ");
 }
 
-public partial class BlameWindow : IeumWindow
+// Blame 화면 - 줄마다 마지막 수정 커밋
+public partial class BlamePage : Page
 {
-    public BlameWindow() : this(null, "") { }
+    readonly string _name;
 
-    public BlameWindow(RepoModel? model, string relPath)
+    public BlamePage() : this(null, "") { }
+
+    public override string PageTitle => "Blame · " + _name;
+
+    public BlamePage(RepoModel? model, string relPath)
     {
         InitializeComponent();
+        _name = Path.GetFileName(relPath);
         DataContext = model;
         PathText.Text = relPath;
         if (model is null) return;
         var repo = model.Repo;
-        LogButton.Click += (_, _) => new LogWindow(new LogModel(model, new LogQuery(Path: relPath))).Show();
-        Opened += async (_, _) =>
+        LogButton.Click += (_, _) => Navigate(new LogPage(new LogModel(model, new LogQuery(Path: relPath))));
+        Shown += async shownFirst =>
         {
+            if (!shownFirst) return;
             try
             {
                 var lines = await Task.Run(() => repo.BlameAsync(relPath));
@@ -49,20 +56,17 @@ public partial class BlameWindow : IeumWindow
         };
 
         // 줄 우클릭 - 그 커밋의 변경 보기
-        var menu = new MenuFlyout();
-        menu.Opening += (_, _) =>
+        AttachMenu(Lines, menu =>
         {
-            menu.Items.Clear();
             if (Lines.SelectedItem is not BlameRow { Line.Uncommitted: false } row) return;
             var mi = new MenuItem { Header = $"{row.Line.Short} 변경 보기" };
             mi.Click += async (_, _) =>
             {
                 var parent = await repo.RunAsync("rev-parse", "-q", "--verify", row.Line.Hash + "^");
                 var spec = new DiffSpec.Commit(row.Line.Hash, parent.Ok ? parent.Output.Trim() : null);
-                new ChangesWindow(model, spec, $"{row.Line.Short} · {row.Line.Summary}").Show();
+                Navigate(new ChangesPage(model, spec, $"{row.Line.Short} · {row.Line.Summary}"));
             };
             menu.Items.Add(mi);
-        };
-        Lines.ContextFlyout = menu;
+        });
     }
 }

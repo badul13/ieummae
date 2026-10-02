@@ -1,15 +1,13 @@
-<w:IeumWindow xmlns="https://github.com/avaloniaui"
+<w:Page xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
         xmlns:v="clr-namespace:Ieummae.App.Views"
         xmlns:theme="clr-namespace:Ieummae.App.Theme"
-        x:Class="Ieummae.App.Windows.CommitWindow"
-        x:DataType="w:CommitModel"
-        Width="1240" Height="800" MinWidth="900" MinHeight="560">
-  <Grid RowDefinitions="156,Auto,*">
-    <w:WoolTop />
+        x:Class="Ieummae.App.Windows.CommitPage"
+        x:DataType="w:CommitModel"        >
+  <Grid RowDefinitions="Auto,*">
 
-    <DockPanel Grid.Row="1" Margin="28,12,26,12">
+    <DockPanel Margin="28,12,26,12">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
         <Button x:Name="ResolveButton" Classes="patch hot" IsVisible="{Binding Repo.HasOperation}">
           <TextBlock Text="{Binding Repo.OperationText, StringFormat='{}{0} · Resolve'}" />
@@ -25,7 +23,7 @@
       </StackPanel>
     </DockPanel>
 
-    <Grid Grid.Row="2" ColumnDefinitions="420,*" Margin="20,0,20,20">
+    <Grid Grid.Row="1" ColumnDefinitions="420,*" Margin="20,0,20,20">
       <!-- 왼쪽 - Changes 체크 목록 + 메시지 카드 -->
       <DockPanel>
         <ContentControl DockPanel.Dock="Bottom" Classes="patch hot" Margin="0,14,0,0" Padding="22,16,20,16">
@@ -91,4 +89,4 @@
       </theme:KnitPanel>
     </Grid>
   </Grid>
-</w:IeumWindow>
+</w:Page>

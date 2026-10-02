@@ -1,24 +1,22 @@
-<w:IeumWindow xmlns="https://github.com/avaloniaui"
+<w:Page xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
         xmlns:v="clr-namespace:Ieummae.App.Views"
         xmlns:git="clr-namespace:Ieummae.Core.Git;assembly=Ieummae.Core"
         xmlns:theme="clr-namespace:Ieummae.App.Theme"
-        x:Class="Ieummae.App.Windows.LogWindow"
-        x:DataType="w:LogModel"
-        Width="1240" Height="800" MinWidth="900" MinHeight="560">
-  <w:IeumWindow.Styles>
+        x:Class="Ieummae.App.Windows.LogPage"
+        x:DataType="w:LogModel"        >
+  <w:Page.Styles>
     <Style Selector="Border.badge.head"><Setter Property="Background" Value="{DynamicResource BadgeHead}" /></Style>
     <Style Selector="Border.badge.branch"><Setter Property="Background" Value="{DynamicResource BadgeBranch}" /></Style>
     <Style Selector="Border.badge.remote"><Setter Property="Background" Value="{DynamicResource BadgeRemote}" /></Style>
     <Style Selector="Border.badge.tag"><Setter Property="Background" Value="{DynamicResource BadgeTag}" /></Style>
     <Style Selector="Border.badge.head TextBlock"><Setter Property="FontWeight" Value="Bold" /></Style>
-  </w:IeumWindow.Styles>
-  <Grid RowDefinitions="156,Auto,*">
-    <w:WoolTop />
+  </w:Page.Styles>
+  <Grid RowDefinitions="Auto,*">
 
     <!-- 제목 줄 - 저장소·브랜치·경로, 원격 버튼, Commit, 더보기 -->
-    <DockPanel Grid.Row="1" Margin="28,12,26,12">
+    <DockPanel Margin="28,12,26,12">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
         <!-- 병합·리베이스 진행 중 - 충돌 해결 창으로 -->
         <Button x:Name="ResolveButton" Classes="patch hot" IsVisible="{Binding Repo.HasOperation}" Margin="0,0,8,0">
@@ -53,7 +51,7 @@
       </StackPanel>
     </DockPanel>
 
-    <Grid Grid.Row="2" ColumnDefinitions="*,390" Margin="20,0,20,20">
+    <Grid Grid.Row="1" ColumnDefinitions="*,390" Margin="20,0,20,20">
       <!-- 커밋 목록 - 검색 칸 + 그래프·이름표·제목·작성자·시간 -->
       <theme:KnitPanel Padding="14,16,12,12">
         <DockPanel>
@@ -129,4 +127,4 @@
       </Grid>
     </Grid>
   </Grid>
-</w:IeumWindow>
+</w:Page>

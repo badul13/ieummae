@@ -2,16 +2,29 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:theme="clr-namespace:Ieummae.App.Theme"
              x:Class="Ieummae.App.Windows.WoolTop">
-  <!-- 창 윗부분 - 양털 머리, 왼쪽에 앱 이름·테마 단추 -->
+  <!-- 창 윗부분 - 양털 머리, 왼쪽에 앱 이름·테마 단추, 오른쪽에 창 버튼
+       맨 위 40px 은 창 끌기 영역 - 그 위 버튼은 ElementRole=User 라야 클릭이 버튼으로 감 -->
   <Panel Height="156">
     <theme:WoolHeader IsHitTestVisible="False" />
     <StackPanel Margin="26,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Horizontal" Spacing="12">
       <TextBlock Text="ieummae" FontFamily="{DynamicResource FontHand}" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" IsHitTestVisible="False" />
       <!-- 테마 - 흰 단추 / 숯색 단추, 꿰맨 쪽이 지금 테마 -->
       <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-        <Button Classes="bare" Click="OnLight" ToolTip.Tip="Light"><theme:ThemeButton Dark="False" /></Button>
-        <Button Classes="bare" Click="OnDark" ToolTip.Tip="Dark"><theme:ThemeButton Dark="True" /></Button>
+        <Button Classes="bare" Click="OnLight" ToolTip.Tip="Light" WindowDecorationProperties.ElementRole="User"><theme:ThemeButton Dark="False" /></Button>
+        <Button Classes="bare" Click="OnDark" ToolTip.Tip="Dark" WindowDecorationProperties.ElementRole="User"><theme:ThemeButton Dark="True" /></Button>
       </StackPanel>
+    </StackPanel>
+    <!-- 창 버튼 - 최소화·최대화·닫기 -->
+    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Orientation="Horizontal" Height="40">
+      <Button Classes="caption" Click="OnMinimize" ToolTip.Tip="최소화" WindowDecorationProperties.ElementRole="User">
+        <Path Width="10" Height="1" Stretch="Fill" Fill="{DynamicResource Muted}" Data="M0 0h10v1h-10z" />
+      </Button>
+      <Button Classes="caption" Click="OnMaximize" ToolTip.Tip="최대화" WindowDecorationProperties.ElementRole="User">
+        <Path Width="10" Height="10" Stretch="Fill" Stroke="{DynamicResource Muted}" StrokeThickness="1" Data="M0.5 0.5h9v9h-9z" />
+      </Button>
+      <Button Classes="caption close" Click="OnClose" ToolTip.Tip="닫기" WindowDecorationProperties.ElementRole="User">
+        <Path Width="10" Height="10" Stretch="Fill" Stroke="{DynamicResource Muted}" StrokeThickness="1" Data="M0 0L10 10M10 0L0 10" />
+      </Button>
     </StackPanel>
   </Panel>
 </UserControl>

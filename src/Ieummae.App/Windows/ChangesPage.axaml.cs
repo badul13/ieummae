@@ -3,13 +3,19 @@ using Ieummae.Core.Git;
 
 namespace Ieummae.App.Windows;
 
-public partial class ChangesWindow : IeumWindow
+// 비교 화면 - 두 커밋(또는 커밋 하나)의 변경 파일 + 고른 파일 diff
+public partial class ChangesPage : Page
 {
-    public ChangesWindow() : this(null, new DiffSpec.WorkingTree(), "") { }
+    readonly string _spec;
 
-    public ChangesWindow(RepoModel? model, DiffSpec spec, string specText)
+    public ChangesPage() : this(null, new DiffSpec.WorkingTree(), "") { }
+
+    public override string PageTitle => "Compare · " + _spec;
+
+    public ChangesPage(RepoModel? model, DiffSpec spec, string specText)
     {
         InitializeComponent();
+        _spec = specText;
         DataContext = model;
         SpecText.Text = specText;
         if (model is null) return;
@@ -19,8 +25,9 @@ public partial class ChangesWindow : IeumWindow
             if (Files.SelectedItem is ChangedFile f)
                 _ = Diff.LoadAsync(async (opt, ct) => (await repo.DiffAsync(spec, [f.Path], opt, ct)).FirstOrDefault());
         };
-        Opened += async (_, _) =>
+        Shown += async first =>
         {
+            if (!first) return;
             var (from, to) = spec switch
             {
                 DiffSpec.Range r => (r.From, r.To),

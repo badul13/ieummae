@@ -5,7 +5,7 @@ namespace Ieummae.App.Windows;
 
 // 저장소 동작 모음 - 로그 창 버튼·더보기 메뉴, 탐색기 메뉴 명령이 함께 씀
 // 각 동작은 저장소가 바뀌었으면 true (부른 쪽이 화면 새로 고침)
-public sealed class Actions(IeumWindow w, RepoModel model)
+public sealed class Actions(IDialogs w, RepoModel model)
 {
     Repository Repo => model.Repo;
 
