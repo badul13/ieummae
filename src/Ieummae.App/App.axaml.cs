@@ -26,7 +26,9 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
         // 테마 - 인자 지정 없으면 Windows 앱 테마 따라감
         var system = PlatformSettings?.GetColorValues().ThemeVariant == PlatformThemeVariant.Dark;
-        Tone.Apply(this, Command.Dark ?? system);
+        // 인자 > 설정 > Windows 테마
+        bool? saved = Platform.Settings.Theme switch { "dark" => true, "light" => false, _ => null };
+        Tone.Apply(this, Command.Dark ?? saved ?? system);
     }
 
     public override void OnFrameworkInitializationCompleted()

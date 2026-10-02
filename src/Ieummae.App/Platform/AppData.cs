@@ -6,7 +6,9 @@ namespace Ieummae.App.Platform;
 // 사용자 데이터 폴더 - %APPDATA%\ieummae
 public static class AppData
 {
-    public static string Dir { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ieummae");
+    // IEUM_APPDATA - 미리보기 도구처럼 실제 설정을 건드리면 안 되는 실행용
+    public static string Dir { get; } = Environment.GetEnvironmentVariable("IEUM_APPDATA") is { Length: > 0 } d ? d
+        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ieummae");
 
     public static string PathOf(string name)
     {

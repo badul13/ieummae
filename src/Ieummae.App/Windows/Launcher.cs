@@ -29,13 +29,25 @@ public static class Launcher
         ["remotes"] = ("Remotes", (m, _) => new ActionWindow(m, "Remotes", a => a.RemotesAsync())),
         // 충돌 해결 - 병합·리베이스 중 남은 충돌
         ["conflicts"] = ("Conflicts", (m, _) => new ConflictWindow(new ConflictModel(m))),
+        // 파일 하나 - 줄마다 마지막 수정 커밋
+        ["blame"] = ("Blame", (m, c) => new BlameWindow(m, m.Repo.Relative(c.Path))),
+    };
+
+    // 저장소 없이도 되는 명령 - 경로는 대상 폴더
+    static readonly Dictionary<string, Func<CommandLine, Window>> Tools = new()
+    {
+        ["clone"] = c => ToolWindow.Clone(Directory.Exists(c.Path) ? c.Path : Path.GetDirectoryName(c.Path)!),
+        ["init"] = c => ToolWindow.Init(Directory.Exists(c.Path) ? c.Path : Path.GetDirectoryName(c.Path)!),
+        ["settings"] = c => new SettingsWindow(Repository.Discover(c.Path)),
     };
 
     public static Window Create(CommandLine cmd)
     {
         Window w;
-        if (!Commands.TryGetValue(cmd.Name, out var c))
-            w = new MessageWindow("알 수 없는 명령", $"{cmd.Name} · 사용 가능: {string.Join(", ", Commands.Keys)}");
+        if (Tools.TryGetValue(cmd.Name, out var tool))
+            w = tool(cmd);
+        else if (!Commands.TryGetValue(cmd.Name, out var c))
+            w = new MessageWindow("알 수 없는 명령", $"{cmd.Name} · 사용 가능: {string.Join(", ", Commands.Keys.Concat(Tools.Keys))}");
         else if (Repository.Discover(cmd.Path) is not { } repo)
             w = new MessageWindow("Git 저장소 아님", cmd.Path);
         else

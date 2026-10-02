@@ -59,6 +59,10 @@ public partial class LogWindow : IeumWindow
         more.Items.Add(new Separator());
         Add("Tags", act.TagsAsync);
         Add("Remotes", act.RemotesAsync);
+        more.Items.Add(new Separator());
+        var settings = new MenuItem { Header = "설정" };
+        settings.Click += (_, _) => new SettingsWindow(model.Repo.Repo).Show();
+        more.Items.Add(settings);
         MoreButton.Flyout = more;
         act.OnConflicts = () => { OpenConflicts(); return Task.CompletedTask; };
         ResolveButton.Click += (_, _) => OpenConflicts();

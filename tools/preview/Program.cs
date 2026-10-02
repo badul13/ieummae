@@ -17,6 +17,8 @@ var repo = args.Length > 0 ? Path.GetFullPath(args[0]) : Environment.CurrentDire
 var outDir = Path.GetFullPath(args.Length > 1 && args[1] != "-" ? args[1] : Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "out"));
 var filter = args.Length > 2 ? args[2] : null;
 Directory.CreateDirectory(outDir);
+// 설정·메시지 기록은 임시 폴더로 - 실제 사용자 설정 보호
+Environment.SetEnvironmentVariable("IEUM_APPDATA", Path.Combine(Path.GetTempPath(), "ieummae-preview-appdata"));
 var demo = Demo.Create();
 var conflict = Demo.CreateConflict();
 
@@ -73,6 +75,11 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
         m.Selected = m.Files.FirstOrDefault(f => f.Kind == Ieummae.Core.Git.ConflictKind.DeletedByThem);
     }),
     ("log-merging", "Log · Merge 중", true, () => Open("log", conflict), null),
+    ("blame", "Blame · 커밋 전 줄 포함", false, () => Open("blame", Path.Combine(demo, "src", "Flock.cs")), null),
+    ("blame-dark", "Blame · README", true, () => Open("blame", Path.Combine(demo, "README.md")), null),
+    ("settings", "설정", false, () => Open("settings", demo), null),
+    ("clone", "Clone · 주소 입력", true, () => Open("clone", Path.GetTempPath()), null),
+    ("init", "Init · 확인", false, () => Open("init", Directory.CreateTempSubdirectory("ieummae-preview-init-").FullName), null),
 };
 // 대형 저장소 - IEUM_BIGREPO 지정 시 (커밋 수만 개 첫 화면 확인)
 if (Environment.GetEnvironmentVariable("IEUM_BIGREPO") is { Length: > 0 } big)

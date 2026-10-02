@@ -12,8 +12,8 @@ public partial class DiffView : UserControl, INotifyPropertyChanged
 {
     public new event PropertyChangedEventHandler? PropertyChanged;
 
-    // 보기 설정 - 같은 프로세스의 diff 화면끼리 공유
-    static bool s_split, s_ignoreWs;
+    // 보기 설정 - 같은 프로세스의 diff 화면끼리 공유, 다음 실행에도 유지
+    static bool s_split = Platform.Settings.DiffSplit, s_ignoreWs = Platform.Settings.DiffIgnoreWhitespace;
 
     // 이보다 줄이 많으면 앞부분만 (화면 응답 유지)
     const int MaxLines = 20_000;
@@ -27,8 +27,8 @@ public partial class DiffView : UserControl, INotifyPropertyChanged
         DataContext = this;
     }
 
-    public bool IsSplit { get => s_split; set { s_split = value; Notify(); } }
-    public bool IgnoreWhitespace { get => s_ignoreWs; set { s_ignoreWs = value; Notify(); } }
+    public bool IsSplit { get => s_split; set { s_split = value; Platform.Settings.DiffSplit = value; Notify(); } }
+    public bool IgnoreWhitespace { get => s_ignoreWs; set { s_ignoreWs = value; Platform.Settings.DiffIgnoreWhitespace = value; Notify(); } }
 
     FileDiff? _file;
     public string FileName => _file is null ? "" : Path.GetFileName(_file.Path);

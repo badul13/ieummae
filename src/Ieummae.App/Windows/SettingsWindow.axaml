@@ -1,0 +1,49 @@
+<w:IeumWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:w="clr-namespace:Ieummae.App.Windows"
+        x:Class="Ieummae.App.Windows.SettingsWindow"
+        Width="760" Height="860">
+  <!-- 설정 - git 이름·메일(전체·이 저장소), 테마, diff 보기 기본값 -->
+  <Grid RowDefinitions="156,Auto,*,Auto">
+    <w:WoolTop ClipToBounds="True" />
+    <TextBlock Grid.Row="1" Text="설정" FontSize="22" Margin="28,12,26,12" />
+    <ScrollViewer Grid.Row="2" Margin="20,0,20,0">
+      <StackPanel Spacing="14">
+        <ContentControl Classes="patch hot" Padding="24,18">
+          <StackPanel Spacing="8">
+            <TextBlock Text="커밋 작성자 · 전체" FontSize="17" />
+            <TextBlock Text="git config --global - 모든 저장소에 쓰임" Classes="hand" FontSize="14" />
+            <TextBox x:Name="GlobalName" Classes="sew" PlaceholderText="이름" />
+            <TextBox x:Name="GlobalEmail" Classes="sew" PlaceholderText="메일" />
+          </StackPanel>
+        </ContentControl>
+        <ContentControl x:Name="LocalCard" Classes="patch hot" Padding="24,18">
+          <StackPanel Spacing="8">
+            <TextBlock x:Name="LocalTitle" Text="커밋 작성자 · 이 저장소" FontSize="17" />
+            <TextBlock Text="비우면 전체 설정 사용 - 회사·개인 저장소 구분용" Classes="hand" FontSize="14" />
+            <TextBox x:Name="LocalName" Classes="sew" PlaceholderText="이름" />
+            <TextBox x:Name="LocalEmail" Classes="sew" PlaceholderText="메일" />
+          </StackPanel>
+        </ContentControl>
+        <ContentControl Classes="patch hot" Padding="24,18">
+          <StackPanel Spacing="8">
+            <TextBlock Text="화면" FontSize="17" />
+            <StackPanel Orientation="Horizontal" Spacing="18">
+              <RadioButton x:Name="ThemeSystem" GroupName="theme" Content="Windows 테마 따라감" />
+              <RadioButton x:Name="ThemeLight" GroupName="theme" Content="Light" />
+              <RadioButton x:Name="ThemeDark" GroupName="theme" Content="Dark" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="18">
+              <CheckBox x:Name="DiffSplit" Content="diff 좌우 보기" />
+              <CheckBox x:Name="DiffWs" Content="diff 공백 차이 무시" />
+            </StackPanel>
+          </StackPanel>
+        </ContentControl>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="20,14,24,20">
+      <Button x:Name="CancelButton" Classes="patch" Content="Cancel" />
+      <Button x:Name="SaveButton" Classes="patch hot" Content="Save" />
+    </StackPanel>
+  </Grid>
+</w:IeumWindow>
