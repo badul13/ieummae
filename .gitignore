@@ -16,3 +16,6 @@ obj/
 out/
 # 측정 도구 소스 - 위 bin/ 규칙 예외
 !tools/bench/src/bin/
+
+# 인증서 공개 파일 - 만든 PC 에서만 의미 있음
+*.cer

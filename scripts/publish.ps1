@@ -1,4 +1,4 @@
-# NativeAOT 배포 - out/app/ieummae.exe (+ Skia·HarfBuzz 네이티브 DLL)
+﻿# NativeAOT 배포 - out/app/ieummae.exe (+ Skia·HarfBuzz 네이티브 DLL)
 $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
 

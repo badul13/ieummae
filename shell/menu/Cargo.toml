@@ -1,0 +1,21 @@
+[package]
+name = "ieummae-menu"
+version = "0.1.0"
+edition = "2021"
+
+# cdylib - 탐색기(dllhost 대리 프로세스)가 불러오는 DLL, rlib - 확인 도구(examples/probe)용
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+windows-core = "0.62"
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Com",
+    "Win32_System_LibraryLoader",
+    "Win32_System_SystemServices",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_Common",
+] }

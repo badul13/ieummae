@@ -12,6 +12,9 @@ public class IeumWindow : Window
 {
     protected override Type StyleKeyOverride => typeof(Window);
 
+    // 작업 표시줄·Alt+Tab 아이콘
+    static readonly WindowIcon s_icon = new(Avalonia.Platform.AssetLoader.Open(new Uri("avares://ieummae/Assets/ieummae.ico")));
+
     readonly Border _dim = new() { IsVisible = false, Background = new SolidColorBrush(Colors.Black, 0.32) };
     Action? _cancel;
     Action? _accept;
@@ -24,6 +27,7 @@ public class IeumWindow : Window
         Bind(BackgroundProperty, this.GetResourceObservable("Bg"));
         Bind(FontFamilyProperty, this.GetResourceObservable("FontJua"));
         FontSize = 14.5;
+        Icon = s_icon;
         AddHandler(KeyDownEvent, OnKey, Avalonia.Interactivity.RoutingStrategies.Tunnel);
     }
 

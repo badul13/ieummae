@@ -14,6 +14,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\ieummae.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.3" />
@@ -21,7 +22,7 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaResource Include="Assets\Fonts\*.ttf;Assets\Fonts\*.otf" />
+    <AvaloniaResource Include="Assets\Fonts\*.ttf;Assets\Fonts\*.otf;Assets\ieummae.ico" />
     <ProjectReference Include="..\Ieummae.Core\Ieummae.Core.csproj" />
   </ItemGroup>
 </Project>
