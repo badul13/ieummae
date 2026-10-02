@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace IeumMock;
 
@@ -27,12 +28,15 @@ public partial class MockWindow
 
     public void OnPalette(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: int i }) return;
+        if (sender is not Button { Tag: string t } || !int.TryParse(t, out var i)) return;
         Tones.Apply(Application.Current!, Program.Tone, i);
         PaletteName = Tones.For(Program.Tone)[i].Name;
         // 레인 색을 바인딩 시점에 읽는 항목들 - 다시 그리기
         if (this.FindControl<ListBox>("List") is { } l) { var s = l.SelectedIndex; l.ItemsSource = null; l.ItemsSource = Commits; l.SelectedIndex = s; }
         if (this.FindControl<ListBox>("FileList") is { } f) { var s = f.SelectedIndex; f.ItemsSource = null; f.ItemsSource = Files; f.SelectedIndex = s; }
         var cur = Sel; Sel = null; Sel = cur;
+        // 직접 그리는 컨트롤 - 그릴 때 자원을 읽으므로 다시 그리기 요청
+        foreach (var v in this.GetVisualDescendants())
+            if (v is WoolHeader or KnitPanel or GraphCell or ThemeButton or SewDot) v.InvalidateVisual();
     }
 }

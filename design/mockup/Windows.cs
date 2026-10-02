@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 
 namespace IeumMock;
@@ -45,8 +46,10 @@ public partial class MockWindow : Window, INotifyPropertyChanged
         DataContext = this;
         if (this.FindControl<ListBox>("List") is { } l)
         {
-            l.SelectionChanged += (_, _) => { if (l.SelectedItem is Commit c) Select(c); };
-            l.SelectedIndex = System.Math.Max(0, Commits.FindIndex(c => c.Badges.Any(b => b.IsHead)));
+            var head = System.Math.Max(0, Commits.FindIndex(c => c.Badges.Any(b => b.IsHead)));
+            Select(Commits[head]);
+            l.SelectedIndex = head;
+            l.SelectionChanged += (_, _) => { if (l.SelectedItem is Commit c && c != Sel) SelectAsync(c); };
         }
         if (this.FindControl<ListBox>("FileList") is { } f)
         {
@@ -58,20 +61,40 @@ public partial class MockWindow : Window, INotifyPropertyChanged
         }
     }
 
+    // 처음 한 번 - 동기 (창 표시 전 내용 채움)
     void Select(Commit c)
     {
         Sel = c;
+        Fill(GitData.Files(c));
+    }
+
+    void Fill(List<FileChange> files)
+    {
         Files.Clear();
-        foreach (var x in GitData.Files(c)) Files.Add(x);
+        foreach (var x in files) Files.Add(x);
         ChangesTitle = $"Changes {Files.Count}";
     }
 
-    void ShowDiff(FileChange fc)
+    // 클릭 - git 호출은 백그라운드, 늦게 온 이전 결과는 버림
+    int _selSeq, _diffSeq;
+
+    async void SelectAsync(Commit c)
+    {
+        Sel = c;
+        int seq = ++_selSeq;
+        var files = await Task.Run(() => GitData.Files(c));
+        if (seq == _selSeq) Fill(files);
+    }
+
+    async void ShowDiff(FileChange fc)
     {
         DiffFile = fc;
+        if (Sel is not { } sel) return;
+        int seq = ++_diffSeq;
+        var lines = await Task.Run(() => GitData.Diff(sel, fc.Path));
+        if (seq != _diffSeq) return;
         Lines.Clear();
-        if (Sel is null) return;
-        foreach (var d in GitData.Diff(Sel, fc.Path)) Lines.Add(d);
+        foreach (var d in lines) Lines.Add(d);
     }
 }
 

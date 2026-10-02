@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
@@ -78,6 +79,10 @@ public sealed class GraphCell : Control
 
     static GraphCell() => AffectsRender<GraphCell>(RowProperty);
 
+    // 그래프 칸 너비 - 로그 전체에서 가장 넓은 레인 기준, 모든 행 같은 너비
+    public static int MaxLane;
+    protected override Size MeasureOverride(Size available) => new(Math.Max(96, X(MaxLane) + Gap * 0.8 + 4), 0);
+
     static object Res(string k) => Application.Current!.Resources[k]!;
     static double Gap => (double)Res("LaneGap");
     static double X(int lane) => Gap * 0.8 + lane * Gap;
@@ -121,8 +126,11 @@ public sealed class GraphCell : Control
                 double rr = head ? 9.5 : 8;
                 var col = (Color)Res("G" + (row.Dot % 7));
                 var dark = new SolidColorBrush(Color.FromRgb((byte)(col.R * 0.68), (byte)(col.G * 0.68), (byte)(col.B * 0.68)));
+                // 다크 - 레인 색이 밝은 파스텔이라 단추 면만 한 톤 낮춤, 밝은 실 대비 확보
+                double k = (bool)Res("IsDark") ? 0.8 : 1;
+                var face = new SolidColorBrush(Color.FromRgb((byte)(col.R * k), (byte)(col.G * k), (byte)(col.B * k)));
                 ctx.DrawEllipse(new SolidColorBrush(Color.FromArgb(0x30, 0, 0, 0)), null, new Point(c.X, c.Y + 1.2), rr, rr);
-                ctx.DrawEllipse(B(row.Dot), new Pen(dark, 1.2), c, rr, rr);
+                ctx.DrawEllipse(face, new Pen(dark, 1.2), c, rr, rr);
                 ctx.DrawEllipse(null, new Pen(dark, 0.9), c, rr - 2.6, rr - 2.6);
                 using (ctx.PushOpacity(0.45))
                 {
@@ -136,7 +144,7 @@ public sealed class GraphCell : Control
                     ctx.DrawGeometry(null, new Pen(Brushes.White, 1.3, lineCap: PenLineCap.Round), arc);
                 }
                 double hd = head ? 2.3 : 2.0;
-                var thread = new Pen((IBrush)Res("Wool"), 1.2, lineCap: PenLineCap.Round);
+                var thread = new Pen((IBrush)Res("Thread"), 1.2, lineCap: PenLineCap.Round);
                 ctx.DrawLine(thread, new Point(c.X - hd, c.Y - hd), new Point(c.X + hd, c.Y + hd));
                 ctx.DrawLine(thread, new Point(c.X + hd, c.Y - hd), new Point(c.X - hd, c.Y + hd));
                 foreach (var (dx, dy) in new[] { (-hd, -hd), (hd, -hd), (-hd, hd), (hd, hd) })

@@ -64,6 +64,40 @@
   <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource Sel}" />
   </Style>
+  <!-- 테두리·배경 없는 버튼 - 내용만 -->
+  <Style Selector="Button.bare">
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Padding" Value="1" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Content="{TemplateBinding Content}" Padding="{TemplateBinding Padding}" Background="Transparent" />
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button.bare:pointerover">
+    <Setter Property="RenderTransform" Value="scale(1.1)" />
+  </Style>
+  <!-- 더보기 메뉴 - 천 조각 카드 -->
+  <Style Selector="MenuFlyoutPresenter">
+    <Setter Property="Background" Value="{DynamicResource Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Stitch}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Padding" Value="6" />
+  </Style>
+  <Style Selector="MenuFlyoutPresenter MenuItem">
+    <Setter Property="FontFamily" Value="{DynamicResource FontJua}" />
+    <Setter Property="FontSize" Value="14.5" />
+    <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    <Setter Property="CornerRadius" Value="9" />
+    <Setter Property="Padding" Value="12,7" />
+  </Style>
+  <Style Selector="MenuFlyoutPresenter MenuItem:pointerover /template/ Border">
+    <Setter Property="Background" Value="{DynamicResource Sel}" />
+  </Style>
+  <Style Selector="MenuFlyoutPresenter Separator">
+    <Setter Property="Background" Value="{DynamicResource Stitch}" />
+  </Style>
   <Style Selector="Button.chip">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Padding" Value="2" />

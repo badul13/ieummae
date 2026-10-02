@@ -9,16 +9,11 @@
     <StackPanel Margin="26,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Spacing="10">
       <StackPanel Orientation="Horizontal" Spacing="12">
         <TextBlock Text="ieummae" FontFamily="{DynamicResource FontHand}" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" IsHitTestVisible="False" />
-        <ItemsControl ItemsSource="{Binding Palettes}" VerticalAlignment="Center">
-          <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="2" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="local:PaletteChip">
-              <Button Classes="chip" Tag="{Binding Index}" Click="OnPalette" Padding="8,1">
-                <TextBlock Text="{Binding Name}" FontSize="13" Foreground="{DynamicResource Muted}" />
-              </Button>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <!-- 테마 - 상아 단추 / 숯색 단추, 꿰맨 쪽이 지금 테마 -->
+        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+          <Button Classes="bare" Tag="0" Click="OnPalette" ToolTip.Tip="Light"><local:ThemeButton Pal="0" /></Button>
+          <Button Classes="bare" Tag="1" Click="OnPalette" ToolTip.Tip="Dark"><local:ThemeButton Pal="1" /></Button>
+        </StackPanel>
       </StackPanel>
     </StackPanel>
   </Panel>

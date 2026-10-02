@@ -21,7 +21,8 @@ public sealed class WoolHeader : Control
         var woolLine = C("WoolLine");
 
         // 양털 몸통 + 구름 가장자리
-        var shade = new SolidColorBrush(woolLine, 0.55);
+        // 다크 - 양털 결 색이 양털과 비슷해 구름 가장자리가 묻힘, 바탕보다 진한 그림자로
+        var shade = (bool)Res("IsDark") ? new SolidColorBrush(Color.Parse("#161412")) : new SolidColorBrush(woolLine, 0.55);
         ctx.FillRectangle(shade, new Rect(0, 3, w, baseY));
         Bumps(ctx, shade, w, baseY + 3, bump);
         ctx.FillRectangle(wool, new Rect(0, 0, w, baseY));
@@ -93,7 +94,7 @@ public sealed class WoolHeader : Control
             ctx.DrawGeometry(null, new Pen(Brushes.White, 2.2, lineCap: PenLineCap.Round), arc);
         }
         double hd = 4.2;
-        var thread = new Pen(new SolidColorBrush(Color.Parse("#FFFDF7")), 2.2, lineCap: PenLineCap.Round);
+        var thread = new Pen(R("EyeThread"), 2.2, lineCap: PenLineCap.Round);
         ctx.DrawLine(thread, new Point(c.X - hd, c.Y - hd), new Point(c.X + hd, c.Y + hd));
         ctx.DrawLine(thread, new Point(c.X + hd, c.Y - hd), new Point(c.X - hd, c.Y + hd));
         foreach (var (dx, dy) in new[] { (-hd, -hd), (hd, -hd), (-hd, hd), (hd, hd) })
@@ -135,6 +136,33 @@ public sealed class KnitPanel : Decorator
 
     static object Res(string k) => Application.Current!.Resources[k]!;
 
+    // 코 한 칸 크기 - 세로 기둥 간격 sx, V 코 높이 sy
+    const double Sx = 12, Sy = 9, Scale = 2;
+    static readonly System.Collections.Generic.Dictionary<Color, Avalonia.Media.Imaging.Bitmap> Tiles = new();
+
+    // 코 한 칸 타일 - 코 하나 = 기울어진 고리 두 개, 이웃 칸 고리가 넘어오는 부분까지 그림
+    static Avalonia.Media.Imaging.Bitmap KnitTile(Color line)
+    {
+        if (Tiles.TryGetValue(line, out var bmp)) return bmp;
+        var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(
+            new PixelSize((int)(Sx * Scale), (int)(Sy * Scale)), new Vector(96 * Scale, 96 * Scale));
+        var loop = new SolidColorBrush(line, 0.30);
+        var edge = new Pen(new SolidColorBrush(line, 0.55), 0.9);
+        using (var ctx = rtb.CreateDrawingContext())
+        {
+            for (int dx = -1; dx <= 1; dx++)
+                for (int dy = -1; dy <= 1; dy++)
+                    foreach (var dir in new[] { -1, 1 })
+                    {
+                        var c = new Point(Sx / 2 + dx * Sx + dir * 2.6, dy * Sy);
+                        using (ctx.PushTransform(Matrix.CreateTranslation(-c.X, -c.Y) * Matrix.CreateRotation(dir * -0.55) * Matrix.CreateTranslation(c.X, c.Y)))
+                            ctx.DrawEllipse(loop, edge, c, 2.4, 5.2);
+                    }
+        }
+        Tiles[line] = rtb;
+        return rtb;
+    }
+
     public override void Render(DrawingContext ctx)
     {
         const double radius = 18;
@@ -148,22 +176,15 @@ public sealed class KnitPanel : Decorator
         ctx.DrawRectangle(new SolidColorBrush(line, 0.8), null, new RoundedRect(b.Translate(new Vector(0, 2.5)), radius));
         ctx.DrawRectangle(fill, null, shape);
 
-        // 메리야스 뜨기 - 세로 기둥마다 V 코를 위아래로 쌓음, 코 하나 = 기울어진 고리 두 개
-        var loop = new SolidColorBrush(line, 0.30);
-        var edge = new Pen(new SolidColorBrush(line, 0.55), 0.9);
-        const double sx = 12, sy = 9;
-        var clip = new RectangleGeometry(b, radius, radius);
-        using (ctx.PushGeometryClip(clip))
+        // 메리야스 뜨기 - 코 한 칸을 비트맵 타일로 한 번만 그리고 바둑판 채우기
+        // (코를 하나씩 그리면 패널당 고리 만 개 - 호버마다 다시 그려져 반응 느림)
+        var knit = new ImageBrush(KnitTile(line))
         {
-            for (double x = b.X + sx / 2; x < b.Right + sx; x += sx)
-                for (double y = b.Y; y < b.Bottom + sy; y += sy)
-                    foreach (var dir in new[] { -1, 1 })
-                    {
-                        var c = new Point(x + dir * 2.6, y);
-                        using (ctx.PushTransform(Matrix.CreateTranslation(-c.X, -c.Y) * Matrix.CreateRotation(dir * -0.55) * Matrix.CreateTranslation(c.X, c.Y)))
-                            ctx.DrawEllipse(loop, edge, c, 2.4, 5.2);
-                    }
-        }
+            TileMode = TileMode.Tile,
+            Stretch = Stretch.Fill,
+            DestinationRect = new RelativeRect(b.X, b.Y, Sx, Sy, RelativeUnit.Absolute),
+        };
+        ctx.DrawRectangle(knit, null, shape);
 
         // 테두리 - 같은 실 색 굵은 털실 선 + 안쪽 홈질
         ctx.DrawRectangle(null, new Pen(new SolidColorBrush(line), 3), shape);

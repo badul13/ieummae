@@ -85,6 +85,7 @@ public static class GitData
             }
             // 로컬과 같은 위치의 origin/같은이름 - 로컬 하나로 합침
             c.Badges.RemoveAll(b => b.Text.StartsWith("origin/") && c.Badges.Exists(l => l.Text == b.Text[7..]));
+            GraphCell.MaxLane = Math.Max(GraphCell.MaxLane, pass.Concat(up).Concat(down).Append(dot).Max());
             list.Add(c);
         }
         return list;
@@ -106,8 +107,10 @@ public static class GitData
     public static List<FileChange> Files(Commit c)
     {
         string range = c.Parents.Length > 0 ? c.Parents[0] : "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
-        var num = Run("diff", "--numstat", "-M", range, c.FullHash);
+        // 두 호출 동시 실행 - git 프로세스 시작 비용이 대부분이라 순서대로 하면 두 배
+        var numTask = System.Threading.Tasks.Task.Run(() => Run("diff", "--numstat", "-M", range, c.FullHash));
         var st = Run("diff", "--name-status", "-M", range, c.FullHash);
+        var num = numTask.Result;
         var status = new Dictionary<string, string>();
         foreach (var line in st.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {

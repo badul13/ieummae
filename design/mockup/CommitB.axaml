@@ -9,41 +9,70 @@
   <local:MockWindow.Styles>
     <StyleInclude Source="avares://ieum-mock/SewStyles.axaml" />
   </local:MockWindow.Styles>
-  <Grid RowDefinitions="138,Auto,*">
+  <!-- 로그 창과 같은 뼈대 - 양털 머리, 제목 줄, 뜨개 패널 -->
+  <Grid RowDefinitions="156,Auto,*">
     <local:WoolTop />
 
-    <TextBlock Grid.Row="1" Text="{Binding CommitNote}" Classes="hand" Margin="30,0,26,12" />
+    <DockPanel Grid.Row="1" Margin="28,12,26,12">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+        <Button Classes="patch" Content="Refresh" />
+        <Button Classes="patch" Content="Log" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <TextBlock Text="Commit" FontSize="22" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding RepoName}" Classes="hand" VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+        <Border Background="{DynamicResource Surface}" CornerRadius="4,10,10,4" Padding="8,2,11,2" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Width="7" Height="7" Fill="{DynamicResource Bg}" Stroke="{DynamicResource Muzzle}" StrokeThickness="1.4" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding BranchName}" FontSize="13.5" Foreground="{DynamicResource Text}" />
+          </StackPanel>
+        </Border>
+        <TextBlock Text="{Binding CommitNote}" Classes="hand" VerticalAlignment="Center" Margin="6,0,0,0" />
+      </StackPanel>
+    </DockPanel>
 
-    <Grid Grid.Row="2" ColumnDefinitions="420,*" Margin="20,0,20,20">
+    <Grid Grid.Row="2" ColumnDefinitions="400,*" Margin="20,0,20,20">
+      <!-- 왼쪽 - Changes 체크 목록 + 메시지 카드 -->
       <DockPanel>
-        <ContentControl DockPanel.Dock="Bottom" Classes="patch hot" Margin="0,14,0,0" Padding="20,16">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Commit message" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource AccentInk}" FontSize="17" />
-            <TextBox Height="80" AcceptsReturn="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent" Padding="0"
-                     FontFamily="{DynamicResource FontJua}" FontSize="14" Foreground="{DynamicResource Text}" Text="{Binding HeadMsg, Mode=OneWay}" />
+        <ContentControl DockPanel.Dock="Bottom" Classes="patch hot" Margin="0,14,0,0" Padding="22,16,20,16">
+          <StackPanel Spacing="8">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Right" Text="최근 메시지" Classes="hand" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+              <TextBlock Text="Message" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" />
+            </DockPanel>
+            <TextBox Height="78" AcceptsReturn="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent" Padding="0"
+                     FontFamily="{DynamicResource FontJua}" FontSize="16" Foreground="{DynamicResource Text}" Text="{Binding HeadMsg, Mode=OneWay}">
+              <TextBox.Styles>
+                <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement, TextBox:focus /template/ Border#PART_BorderElement">
+                  <Setter Property="Background" Value="Transparent" />
+                  <Setter Property="BorderThickness" Value="0" />
+                </Style>
+              </TextBox.Styles>
+            </TextBox>
             <DockPanel>
               <Button DockPanel.Dock="Right" Classes="patch hot" Content="Commit" />
-              <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                <CheckBox Content="Amend" FontSize="13.5" />
-                <CheckBox Content="Push after commit" FontSize="13.5" IsChecked="True" />
+              <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                <CheckBox Content="Amend" FontSize="14" />
+                <CheckBox Content="Push" FontSize="14" IsChecked="True" />
               </StackPanel>
             </DockPanel>
           </StackPanel>
         </ContentControl>
-        <ContentControl Classes="patch" Padding="14,16,14,10">
+
+        <local:KnitPanel Yarn="Knit2" Padding="16,18,16,14">
           <DockPanel>
-            <DockPanel DockPanel.Dock="Top" Margin="8,0,8,8">
-              <TextBlock DockPanel.Dock="Right" Text="Select all" Classes="hand" Foreground="{DynamicResource AccentInk}" />
+            <DockPanel DockPanel.Dock="Top" Margin="8,0,8,6">
+              <TextBlock DockPanel.Dock="Right" Text="Select all" Classes="hand" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
               <TextBlock Text="{Binding ChangesTitle}" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" />
             </DockPanel>
             <ListBox x:Name="FileList" ItemsSource="{Binding Files}">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="local:FileChange">
-                  <Grid ColumnDefinitions="32,*,Auto" Height="42" Margin="6,0,10,0">
+                  <Grid ColumnDefinitions="30,*,Auto" Height="44" Margin="6,0,12,0">
                     <CheckBox IsChecked="{Binding Checked}" MinWidth="0" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Text="{Binding Dir}" Classes="hand" FontSize="14" TextTrimming="LeadingCharacterEllipsis" />
+                      <TextBlock Text="{Binding Name}" FontSize="15" TextTrimming="{x:Static local:DotsTrimming.End}" />
+                      <TextBlock Text="{Binding Dir}" Classes="hand" FontSize="14" TextTrimming="{x:Static local:DotsTrimming.Start}" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0,0,0">
                       <TextBlock Text="{Binding StatusWord}" Classes="hand" FontSize="14" HorizontalAlignment="Right" />
@@ -57,34 +86,38 @@
               </ListBox.ItemTemplate>
             </ListBox>
           </DockPanel>
-        </ContentControl>
+        </local:KnitPanel>
       </DockPanel>
 
-      <ContentControl Grid.Column="1" Classes="patch" Margin="16,0,0,0" Padding="14,16,14,14">
+      <!-- 오른쪽 - 선택 파일 diff -->
+      <local:KnitPanel Grid.Column="1" Margin="16,0,0,0" Padding="16,18,16,14">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top" Margin="10,0,10,10">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12">
-              <TextBlock Text="Unified" />
-              <TextBlock Text="Split" Foreground="{DynamicResource Muted}" />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+              <TextBlock Text="Unified" Classes="hand" Foreground="{DynamicResource Text}" FontWeight="Bold" />
+              <TextBlock Text="Split" Classes="hand" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="10">
               <TextBlock Text="{Binding DiffFile.Name}" FontSize="18" />
+              <TextBlock Text="{Binding DiffFile.Dir}" Classes="hand" VerticalAlignment="Center" />
               <TextBlock Text="{Binding DiffFile.AddText}" Foreground="{DynamicResource AddFg}" VerticalAlignment="Center" />
               <TextBlock Text="{Binding DiffFile.DelText}" Foreground="{DynamicResource DelFg}" VerticalAlignment="Center" />
             </StackPanel>
           </DockPanel>
           <ListBox ItemsSource="{Binding Lines}" Background="Transparent">
             <ListBox.Styles>
+              <Style Selector="ListBoxItem /template/ ContentPresenter"><Setter Property="CornerRadius" Value="0" /></Style>
               <Style Selector="ListBoxItem:selected /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
               <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
+              <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
               <Style Selector="Border.add, Border.del, Border.hunk"><Setter Property="CornerRadius" Value="6" /></Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="local:DiffLine">
                 <Border Classes.add="{Binding IsAdd}" Classes.del="{Binding IsDel}" Classes.hunk="{Binding IsHunk}" Padding="0,2">
                   <Grid ColumnDefinitions="44,44,18,*">
-                    <TextBlock Text="{Binding Old}" Foreground="{DynamicResource Muted}" Opacity="0.7" FontSize="12.5" TextAlignment="Right" Margin="0,0,8,0" />
-                    <TextBlock Grid.Column="1" Text="{Binding New}" Foreground="{DynamicResource Muted}" Opacity="0.7" FontSize="12.5" TextAlignment="Right" Margin="0,0,8,0" />
+                    <TextBlock Text="{Binding Old}" Foreground="{DynamicResource Muted}" FontSize="12.5" TextAlignment="Right" Margin="0,0,8,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding New}" Foreground="{DynamicResource Muted}" FontSize="12.5" TextAlignment="Right" Margin="0,0,8,0" />
                     <TextBlock Grid.Column="2" Text="{Binding Sign}" Classes="sign" />
                     <TextBlock Grid.Column="3" Text="{Binding Text}" Classes="code" FontFamily="{DynamicResource FontMono}" FontSize="13" />
                   </Grid>
@@ -93,7 +126,7 @@
             </ListBox.ItemTemplate>
           </ListBox>
         </DockPanel>
-      </ContentControl>
+      </local:KnitPanel>
     </Grid>
   </Grid>
 </local:MockWindow>
