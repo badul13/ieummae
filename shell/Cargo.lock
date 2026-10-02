@@ -3,9 +3,30 @@
 version = 4
 
 [[package]]
+name = "ieummae-cache"
+version = "0.1.0"
+dependencies = [
+ "ieummae-common",
+ "windows",
+]
+
+[[package]]
+name = "ieummae-common"
+version = "0.1.0"
+
+[[package]]
 name = "ieummae-menu"
 version = "0.1.0"
 dependencies = [
+ "windows",
+ "windows-core",
+]
+
+[[package]]
+name = "ieummae-overlay"
+version = "0.1.0"
+dependencies = [
+ "ieummae-common",
  "windows",
  "windows-core",
 ]

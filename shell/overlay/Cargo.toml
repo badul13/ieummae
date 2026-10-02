@@ -1,0 +1,23 @@
+[package]
+name = "ieummae-overlay"
+version = "0.1.0"
+edition = "2021"
+
+# 아이콘 표시 DLL - 탐색기 안에서 실행되므로 캐시 조회만 (짧은 시간 제한)
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+ieummae-common = { path = "../common" }
+windows-core = "0.62"
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Com",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Pipes",
+    "Win32_System_SystemServices",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+] }

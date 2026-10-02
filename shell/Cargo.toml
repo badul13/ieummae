@@ -1,6 +1,6 @@
-# 탐색기 확장 - 우클릭 메뉴 (8단계), 아이콘 표시 (9단계)
+# 탐색기 확장 - 우클릭 메뉴 (8단계), 아이콘 표시 (9단계: 상태 캐시 프로세스 + 오버레이 DLL)
 [workspace]
-members = ["menu"]
+members = ["common", "menu", "cache", "overlay"]
 resolver = "2"
 
 [profile.release]

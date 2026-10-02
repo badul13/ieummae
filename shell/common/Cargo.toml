@@ -1,0 +1,7 @@
+[package]
+name = "ieummae-common"
+version = "0.1.0"
+edition = "2021"
+
+# 캐시 프로세스·오버레이 DLL 공통 - 파이프 이름, 상태 값, git status 해석
+[dependencies]

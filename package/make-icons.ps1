@@ -91,6 +91,55 @@ for ($i = 0; $i -lt $sizes.Count; $i++) {
 foreach ($img in $images) { $w.Write($img) }
 [System.IO.File]::WriteAllBytes((Join-Path $root "src\Ieummae.App\Assets\ieummae.ico"), $ico.ToArray())
 
+# 탐색기 아이콘 표시 - 왼쪽 아래 작은 단추 + 기호 (정상 ✓, 수정 •, 충돌 !, 추가 +)
+function Overlay([int]$size, [string]$kind) {
+    $bmp = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.SmoothingMode = "AntiAlias"
+    $g.Clear([System.Drawing.Color]::Transparent)
+    $colors = @{ normal = "#5BA36B"; modified = "#D9893A"; conflict = "#C9483E"; added = "#4C86C6" }
+    $c = [System.Drawing.ColorTranslator]::FromHtml($colors[$kind])
+    $s = $size / 16.0
+    # 단추 - 진한 테두리, 흰 실 기호
+    $dark = [System.Drawing.Color]::FromArgb(255, [int]($c.R * 0.65), [int]($c.G * 0.65), [int]($c.B * 0.65))
+    $g.FillEllipse((New-Object System.Drawing.SolidBrush $c), 0.5 * $s, 0.5 * $s, 15 * $s, 15 * $s)
+    $g.DrawEllipse((New-Object System.Drawing.Pen $dark, ([Math]::Max(1, 1.1 * $s))), 0.5 * $s, 0.5 * $s, 15 * $s, 15 * $s)
+    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::White), ([Math]::Max(1.2, 1.9 * $s))
+    $pen.StartCap = "Round"; $pen.EndCap = "Round"
+    switch ($kind) {
+        "normal" { $g.DrawLines($pen, [System.Drawing.PointF[]]@([System.Drawing.PointF]::new(4.5 * $s, 8.2 * $s), [System.Drawing.PointF]::new(7 * $s, 10.8 * $s), [System.Drawing.PointF]::new(11.5 * $s, 5.5 * $s))) }
+        "modified" { $g.FillEllipse([System.Drawing.Brushes]::White, 5.3 * $s, 5.3 * $s, 5.4 * $s, 5.4 * $s) }
+        "conflict" { $g.DrawLine($pen, 8 * $s, 4 * $s, 8 * $s, 8.8 * $s); $g.FillEllipse([System.Drawing.Brushes]::White, 6.9 * $s, 10.3 * $s, 2.2 * $s, 2.2 * $s) }
+        "added" { $g.DrawLine($pen, 8 * $s, 4.5 * $s, 8 * $s, 11.5 * $s); $g.DrawLine($pen, 4.5 * $s, 8 * $s, 11.5 * $s, 8 * $s) }
+    }
+    $g.Dispose()
+    return $bmp
+}
+
+function Ico([int[]]$sizes, [scriptblock]$draw, [string]$path) {
+    $images = foreach ($n in $sizes) { , (Dib (& $draw $n)) }
+    $ico = New-Object System.IO.MemoryStream
+    $w = New-Object System.IO.BinaryWriter $ico
+    $w.Write([uint16]0); $w.Write([uint16]1); $w.Write([uint16]$sizes.Count)
+    $offset = 6 + 16 * $sizes.Count
+    for ($i = 0; $i -lt $sizes.Count; $i++) {
+        $n = $sizes[$i]
+        $w.Write([byte]$n); $w.Write([byte]$n); $w.Write([byte]0); $w.Write([byte]0)
+        $w.Write([uint16]1); $w.Write([uint16]32)
+        $w.Write([uint32]$images[$i].Length); $w.Write([uint32]$offset)
+        $offset += $images[$i].Length
+    }
+    foreach ($img in $images) { $w.Write($img) }
+    [System.IO.File]::WriteAllBytes($path, $ico.ToArray())
+}
+
+$ovDir = Join-Path $PSScriptRoot "overlays"
+New-Item -ItemType Directory -Force $ovDir | Out-Null
+foreach ($kind in "normal", "modified", "conflict", "added") {
+    $k = $kind
+    Ico @(8, 10, 12, 16, 20, 24, 32, 48) { param($n) Overlay $n $k } (Join-Path $ovDir "$kind.ico")
+}
+
 # 패키지 로고
 foreach ($p in @(@("Square44x44Logo.png", 44), @("Square150x150Logo.png", 150), @("StoreLogo.png", 50))) {
     [System.IO.File]::WriteAllBytes((Join-Path $PSScriptRoot "Assets\$($p[0])"), (Png (Draw $p[1])))
