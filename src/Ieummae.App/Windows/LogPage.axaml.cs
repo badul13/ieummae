@@ -42,9 +42,11 @@ public partial class LogPage : Page
 
         // 원격·브랜치 동작 - 끝나면 새로 고침
         var act = new Actions(this, model.Repo);
-        FetchButton.Click += (_, _) => Run(act.FetchAsync);
-        PullButton.Click += (_, _) => Run(act.PullAsync);
-        PushButton.Click += (_, _) => Run(act.PushAsync);
+        // Fetch·Pull·Push - 팝업 없이 누른 버튼의 박음질이 돌아감. 돌아가는 버튼을 다시 누르면 취소
+        act.Runner = (title, work) => RunOnButtonAsync(title switch { "Fetch" => FetchButton, "Pull" => PullButton, _ => PushButton }, title, work);
+        FetchButton.Click += (_, _) => { if (!CancelBusy(FetchButton)) Run(act.FetchAsync); };
+        PullButton.Click += (_, _) => { if (!CancelBusy(PullButton)) Run(act.PullAsync); };
+        PushButton.Click += (_, _) => { if (!CancelBusy(PushButton)) Run(act.PushAsync); };
         Chip.Tapped += (_, _) => Run(act.SwitchAsync);
         var more = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedRight };
         void Add(string header, Func<Task<bool>> run)
@@ -75,6 +77,9 @@ public partial class LogPage : Page
     }
 
     public Actions? Actions { get; }
+
+    // 커밋 화면에서 Push 체크하고 돌아왔을 때
+    public void PushNow() { if (Actions is { } a) Run(a.PushAsync); }
 
     // 처음 보일 때 한 번 실행할 동작
     public Func<Actions, Task<bool>>? StartAction { get; set; }

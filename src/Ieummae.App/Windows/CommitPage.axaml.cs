@@ -39,6 +39,12 @@ public partial class CommitPage : Page
         };
         CommitButton.Click += async (_, _) => await CommitAsync();
         HistoryButton.Click += (_, _) => ShowHistory();
+        PushButton.Click += async (_, _) =>
+        {
+            if (CancelBusy(PushButton) || DialogOpen) return;
+            await RunOnButtonAsync(PushButton, "Push", (l, ct) => Repo.PushAsync(l, ct));
+            await model.Repo.LoadAsync();
+        };
         ResolveButton.Click += (_, _) => Navigate(new ConflictPage(new ConflictModel(model.Repo)));
         // 스페이스 - 고른 줄들 체크 전환
         FileList.KeyDown += (_, e) =>
@@ -94,11 +100,12 @@ public partial class CommitPage : Page
             var message = m.Message;
             if (!await CheckAsync("Commit", m.CommitAsync())) { await m.LoadAsync(); return; }
             MessageHistory.Add(message);
+            // Push 체크 - 로그로 가서 Push 버튼 박음질로 진행 (팝업 없음, 실패하면 거기서 다시 누르면 됨)
             if (m.Push)
             {
-                var r = await ProgressAsync("Push", (onLine, ct) => Repo.PushAsync(onLine, ct));
-                // 커밋은 됐으므로 Push 실패해도 창은 남겨 다시 시도할 수 있게
-                if (!r.Ok) { m.Message = ""; m.Amend = false; await RefreshAsync(); return; }
+                if (Host.Previous is LogPage log) { GoBack(); log.PushNow(); }
+                else Host.Replace(new LogPage(new LogModel(m.Repo, new LogQuery())) { StartAction = a => a.PushAsync() });
+                return;
             }
             // 커밋 끝 - 앞 화면으로 (탐색기에서 바로 열었으면 창 닫힘)
             GoBack();

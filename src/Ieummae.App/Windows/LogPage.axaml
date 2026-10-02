@@ -28,10 +28,10 @@
         <Button x:Name="PullButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
           <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Pull" VerticalAlignment="Center" /></StackPanel>
         </Button>
-        <Button x:Name="PushButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
-          <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Push" VerticalAlignment="Center" /></StackPanel>
+        <!-- Push - 올릴 커밋 수 표시, 올릴 게 없으면 흐리게 -->
+        <Button x:Name="PushButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8" IsEnabled="{Binding Repo.CanPush}">
+          <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Push" VerticalAlignment="Center" /><TextBlock Text="{Binding Repo.PushCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold" VerticalAlignment="Center" IsVisible="{Binding Repo.HasPushCount}" /></StackPanel>
         </Button>
-        <Button x:Name="CommitButton" Classes="patch hot" Content="Commit" />
         <!-- 더보기 - 버튼에 없는 나머지 명령, 점 셋은 Jua 에 … 글자가 없어 직접 그림 -->
         <Button x:Name="MoreButton" Classes="patch" Padding="12,8" ToolTip.Tip="More">
           <StackPanel Orientation="Horizontal" Spacing="3.5" Height="20" VerticalAlignment="Center">
@@ -40,6 +40,7 @@
             <Ellipse Width="4.5" Height="4.5" Fill="{DynamicResource Text}" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
+        <Button x:Name="CommitButton" Classes="patch hot" Content="Commit" />
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
         <TextBlock Text="{Binding Repo.Name}" FontSize="22" VerticalAlignment="Center" />

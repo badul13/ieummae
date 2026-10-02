@@ -218,7 +218,7 @@ public class IeumWindow : Window, IDialogs
             if (last.Count > 6) last.RemoveAt(0);
             lines.Text = string.Join("\n", last);
         });
-        lines.Text = "시작";
+        lines.Text = "원격 저장소 연결 중";
         var card = ShowCard(title, lines, [("Cancel", false, () => false)], false);
         var run = work(OnLine, cts.Token);
         var done = await Task.WhenAny(run, card);

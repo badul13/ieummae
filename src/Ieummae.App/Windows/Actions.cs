@@ -12,21 +12,24 @@ public sealed class Actions(IDialogs w, RepoModel model)
     // 충돌 생기면 부르는 쪽 - 충돌 해결 창 열기
     public Func<Task>? OnConflicts { get; set; }
 
+    // Fetch·Pull·Push 실행 방식 - 로그 화면은 버튼 박음질로 (팝업 없음), 없으면 진행 상자
+    public Func<string, Func<Action<string>, CancellationToken, Task<GitResult>>, Task<GitResult>>? Runner { get; set; }
+
+    Task<GitResult> Remote(string title, Func<Action<string>, CancellationToken, Task<GitResult>> work) =>
+        Runner is { } run ? run(title, work) : w.ProgressAsync(title, work);
+
     public async Task<bool> FetchAsync() =>
-        (await w.ProgressAsync("Fetch", (l, ct) => Repo.FetchAsync(l, ct))).Ok;
+        (await Remote("Fetch", (l, ct) => Repo.FetchAsync(l, ct))).Ok;
 
     public async Task<bool> PullAsync()
     {
-        var r = await w.ProgressAsync("Pull", (l, ct) => Repo.PullAsync(l, ct));
+        await Remote("Pull", (l, ct) => Repo.PullAsync(l, ct));
         await AfterMergeLikeAsync();
         return true;
     }
 
-    public async Task<bool> PushAsync()
-    {
-        var r = await w.ProgressAsync("Push", (l, ct) => Repo.PushAsync(l, ct));
-        return r.Ok;
-    }
+    public async Task<bool> PushAsync() =>
+        (await Remote("Push", (l, ct) => Repo.PushAsync(l, ct))).Ok;
 
     // 병합·리베이스·Pull 뒤 - 충돌 남았으면 해결 창 안내
     async Task AfterMergeLikeAsync()

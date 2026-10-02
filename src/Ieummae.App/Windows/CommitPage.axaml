@@ -12,8 +12,12 @@
         <Button x:Name="ResolveButton" Classes="patch hot" IsVisible="{Binding Repo.HasOperation}">
           <TextBlock Text="{Binding Repo.OperationText, StringFormat='{}{0} · Resolve'}" />
         </Button>
+        <!-- Push - 로그와 같은 버튼, 이미 커밋해 둔 것 올리기 -->
+        <Button x:Name="PushButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8" IsEnabled="{Binding Repo.CanPush}">
+          <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Push" VerticalAlignment="Center" /><TextBlock Text="{Binding Repo.PushCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold" VerticalAlignment="Center" IsVisible="{Binding Repo.HasPushCount}" /></StackPanel>
+        </Button>
         <Button x:Name="RefreshButton" Classes="patch" Content="Refresh" ToolTip.Tip="F5" />
-        <Button x:Name="LogButton" Classes="patch" Content="Log" />
+        <Button x:Name="LogButton" Classes="patch hot" Content="Log" />
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
         <TextBlock Text="Commit" FontSize="22" VerticalAlignment="Center" />

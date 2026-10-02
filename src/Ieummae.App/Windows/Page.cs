@@ -54,6 +54,38 @@ public abstract class Page : UserControl, IDialogs
         };
     }
 
+    readonly Dictionary<Button, CancellationTokenSource> _busy = [];
+
+    // 진행 중인 버튼이면 취소하고 true - 버튼 Click 처리 맨 앞에서
+    protected bool CancelBusy(Button b)
+    {
+        if (!_busy.TryGetValue(b, out var cts)) return false;
+        cts.Cancel();
+        return true;
+    }
+
+    // 버튼 위에서 실행 (팝업 없음) - 박음질이 진해지며 돌아감, 마지막 진행 줄은 풍선 도움말로, 실패할 때만 오류 상자
+    protected async Task<GitResult> RunOnButtonAsync(Button b, string title, Func<Action<string>, CancellationToken, Task<GitResult>> work)
+    {
+        using var cts = new CancellationTokenSource();
+        _busy[b] = cts;
+        b.Classes.Add("busy");
+        ToolTip.SetTip(b, "진행 중 - 누르면 취소");
+        try
+        {
+            var r = await work(line => Avalonia.Threading.Dispatcher.UIThread.Post(() => ToolTip.SetTip(b, line + " - 누르면 취소")), cts.Token);
+            if (!r.Ok) await AlertAsync(title + " 실패", r.Message);
+            return r;
+        }
+        catch (OperationCanceledException) { return new GitResult(-1, "", "취소됨"); }
+        finally
+        {
+            _busy.Remove(b);
+            b.Classes.Remove("busy");
+            ToolTip.SetTip(b, null);
+        }
+    }
+
     public Task<bool> ConfirmAsync(string title, string message, string ok = "OK") => Host.ConfirmAsync(title, message, ok);
     public Task AlertAsync(string title, string message) => Host.AlertAsync(title, message);
     public Task<(string Text, bool Check)?> PromptAsync(string title, string label, string initial = "", string ok = "OK", string? check = null, bool checkDefault = false, string? second = null) =>

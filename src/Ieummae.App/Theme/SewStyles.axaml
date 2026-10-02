@@ -159,4 +159,17 @@
   <Style Selector="Button.caption:pointerover"><Setter Property="Background" Value="{DynamicResource Surface2}" /></Style>
   <Style Selector="Button.caption.close:pointerover"><Setter Property="Background" Value="#C9483E" /></Style>
   <Style Selector="Button.caption.close:pointerover Path"><Setter Property="Stroke" Value="White" /></Style>
+
+  <!-- 진행 중 버튼 - 박음질이 진해지며 테두리를 따라 돌아감 (팝업 대신) -->
+  <Style Selector="Button.patch.busy /template/ Rectangle">
+    <Setter Property="Stroke" Value="{DynamicResource Accent}" />
+    <Setter Property="StrokeThickness" Value="2" />
+    <Style.Animations>
+      <!-- 한 바퀴 = 점선 한 주기(2.6+2.2) - 끝과 처음이 이어져 끊김 없음 -->
+      <Animation Duration="0:0:0.7" IterationCount="INFINITE">
+        <KeyFrame Cue="0%"><Setter Property="StrokeDashOffset" Value="0" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="StrokeDashOffset" Value="-4.8" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
 </Styles>
