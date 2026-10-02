@@ -41,7 +41,7 @@
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
         <TextBlock Text="{Binding Repo.Name}" FontSize="22" VerticalAlignment="Center" />
-        <w:BranchChip DataContext="{Binding Repo}" />
+        <w:BranchChip x:Name="Chip" DataContext="{Binding Repo}" Cursor="Hand" ToolTip.Tip="Switch" />
         <Border Classes="badge" Background="{DynamicResource Surface}" IsVisible="{Binding HasPath}" VerticalAlignment="Center">
           <TextBlock Text="{Binding PathText}" FontSize="13.5" />
         </Border>

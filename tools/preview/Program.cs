@@ -52,6 +52,8 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
         return new Ieummae.Core.Git.GitResult(0, "", "");
     })),
     ("commit-amend", "Commit · Amend 메시지", true, () => Open("commit", demo), w => { var m = (CommitModel)w.DataContext!; m.Message = "울타리 연결 준비\n\n- Flock 크기 계산을 Count 로\n- 메모 추가"; }),
+    ("action-switch", "탐색기 Switch · 브랜치 고르기", false, () => Open("switch", demo), null),
+    ("action-stash", "탐색기 Stash", true, () => Open("stash", demo), null),
 };
 // 대형 저장소 - IEUM_BIGREPO 지정 시 (커밋 수만 개 첫 화면 확인)
 if (Environment.GetEnvironmentVariable("IEUM_BIGREPO") is { Length: > 0 } big)

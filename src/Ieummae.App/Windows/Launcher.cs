@@ -15,6 +15,18 @@ public static class Launcher
         ["commit"] = ("Commit", (m, c) => new CommitWindow(new CommitModel(m, m.Repo.Relative(c.Path) is { Length: > 0 } p ? p : null))),
         // 파일 하나 - 작업 트리 변경 (HEAD 대비)
         ["diff"] = ("Diff", (m, c) => new DiffWindow(m, null, m.Repo.Relative(c.Path), "작업 트리 · HEAD 대비")),
+        // 동작 하나짜리 - 탐색기 메뉴용
+        ["fetch"] = ("Fetch", (m, _) => new ActionWindow(m, "Fetch", a => a.FetchAsync())),
+        ["pull"] = ("Pull", (m, _) => new ActionWindow(m, "Pull", a => a.PullAsync())),
+        ["push"] = ("Push", (m, _) => new ActionWindow(m, "Push", a => a.PushAsync())),
+        ["switch"] = ("Switch", (m, _) => new ActionWindow(m, "Switch", a => a.SwitchAsync())),
+        ["branch"] = ("New Branch", (m, _) => new ActionWindow(m, "New Branch", a => a.NewBranchAsync())),
+        ["merge"] = ("Merge", (m, _) => new ActionWindow(m, "Merge", a => a.MergeAsync())),
+        ["rebase"] = ("Rebase", (m, _) => new ActionWindow(m, "Rebase", a => a.RebaseAsync())),
+        ["stash"] = ("Stash", (m, _) => new ActionWindow(m, "Stash", a => a.StashAsync())),
+        ["stash-list"] = ("Stash List", (m, _) => new ActionWindow(m, "Stash List", a => a.StashesAsync())),
+        ["tags"] = ("Tags", (m, _) => new ActionWindow(m, "Tags", a => a.TagsAsync())),
+        ["remotes"] = ("Remotes", (m, _) => new ActionWindow(m, "Remotes", a => a.RemotesAsync())),
     };
 
     public static Window Create(CommandLine cmd)

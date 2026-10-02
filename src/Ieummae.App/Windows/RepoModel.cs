@@ -17,9 +17,21 @@ public sealed class RepoModel(Repository repo) : INotifyPropertyChanged
     string _branch = "";
     public string Branch { get => _branch; private set => Set(ref _branch, value); }
 
+    // 추적 브랜치 대비 - ↑ 올릴 커밋, ↓ 받을 커밋 (추적 없으면 빈 칸)
+    string _sync = "";
+    public string SyncText { get => _sync; private set => Set(ref _sync, value); }
+
     public async Task LoadAsync()
     {
-        Branch = await Repo.BranchAsync() ?? Detached;
+        var branch = Repo.BranchAsync();
+        var ab = Repo.AheadBehindAsync();
+        Branch = await branch ?? Detached;
+        SyncText = await ab switch
+        {
+            null => "",
+            (0, 0) => "up to date",
+            var (a, b) => string.Join(" ", new[] { a > 0 ? $"↑{a}" : "", b > 0 ? $"↓{b}" : "" }.Where(s => s.Length > 0)),
+        };
     }
 
     void Set<T>(ref T field, T value, [CallerMemberName] string name = "")

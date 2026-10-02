@@ -142,6 +142,49 @@ public class IeumWindow : Window
         return ShowCard(title, body, [("Cancel", false, () => -1), (ok, true, () => radios.FindIndex(r => r.IsChecked == true))], -1);
     }
 
+    public sealed record PickResult(int Index, int Action, bool Check);
+
+    // 목록에서 고르기 - 위 검색 칸으로 거르고, 버튼마다 다른 동작 (예: Apply / Pop / Drop)
+    public async Task<PickResult?> PickAsync(string title, string message, IReadOnlyList<(string Name, string Detail)> items,
+        IReadOnlyList<string> actions, string? check = null, bool checkDefault = false)
+    {
+        var filter = new TextBox { Classes = { "sew" }, PlaceholderText = "거르기", IsVisible = items.Count > 8 };
+        var list = new ListBox { Height = Math.Min(320, Math.Max(1, items.Count) * 46 + 8), MinWidth = 440, SelectionMode = SelectionMode.Single };
+        list.Classes.Add("pick");
+        var view = items.Select((x, i) => (x.Name, x.Detail, i)).ToList();
+        void Fill()
+        {
+            var q = filter.Text?.Trim() ?? "";
+            list.ItemsSource = view
+                .Where(v => q.Length == 0 || v.Name.Contains(q, StringComparison.OrdinalIgnoreCase) || v.Detail.Contains(q, StringComparison.OrdinalIgnoreCase))
+                .Select(v =>
+                {
+                    var sp = new StackPanel { Tag = v.i, Margin = new Thickness(8, 4) };
+                    sp.Children.Add(new TextBlock { Text = v.Name, FontSize = 15 });
+                    if (v.Detail.Length > 0) sp.Children.Add(new TextBlock { Text = v.Detail, Classes = { "hand" }, FontSize = 14, TextTrimming = Ieummae.App.Theme.DotsTrimming.End });
+                    return sp;
+                }).ToList();
+            list.SelectedIndex = 0;
+        }
+        filter.TextChanged += (_, _) => Fill();
+        Fill();
+        var body = new StackPanel { Spacing = 8 };
+        if (message.Length > 0) body.Children.Add(Hand(message));
+        body.Children.Add(filter);
+        body.Children.Add(items.Count == 0 ? Hand("항목 없음") : list);
+        CheckBox? cb = check is null ? null : new CheckBox { Content = check, IsChecked = checkDefault };
+        if (cb is not null) body.Children.Add(cb);
+        int Picked() => list.SelectedItem is StackPanel { Tag: int i } ? i : -1;
+        var buttons = new List<(string, bool, Func<PickResult?>)> { ("Cancel", false, () => null) };
+        for (int a = 0; a < actions.Count; a++)
+        {
+            int act = a;
+            buttons.Add((actions[a], a == 0, () => Picked() is >= 0 and var i ? new PickResult(i, act, cb?.IsChecked == true) : null));
+        }
+        list.DoubleTapped += (_, _) => _accept?.Invoke();
+        return await ShowCard<PickResult?>(title, body, buttons, null, items.Count > 8 ? filter : list);
+    }
+
     // 진행 상자 - git 진행 줄을 그대로 보여 주고, 끝나면 닫힘. 실패면 오류 상자로 바뀜
     public async Task<GitResult> ProgressAsync(string title, Func<Action<string>, CancellationToken, Task<GitResult>> work)
     {

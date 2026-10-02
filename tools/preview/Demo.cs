@@ -8,11 +8,7 @@ static class Demo
 
     public static string Create()
     {
-        if (Directory.Exists(Root))
-        {
-            foreach (var f in Directory.EnumerateFiles(Root, "*", SearchOption.AllDirectories)) File.SetAttributes(f, FileAttributes.Normal);
-            Directory.Delete(Root, true);
-        }
+        Reset(Root);
         Directory.CreateDirectory(Root);
         Git("init", "-q", "-b", "main");
         Git("config", "user.name", "양털");
@@ -39,6 +35,12 @@ static class Demo
         Write("src/Fence.cs", "namespace Farm;\n\npublic record Fence(int Length);\n");
         Commit("울타리 모델", "2026-09-27T13:45:00");
         Git("checkout", "-q", "main");
+        // 원격 - 맨 저장소에 여기까지 올려 두고, 다음 커밋은 올리지 않음 (↑1 표시)
+        var origin = Root + "-origin";
+        Reset(origin);
+        Ieummae.Core.Git.Git.RunAsync(Path.GetTempPath(), "init", "-q", "--bare", "-b", "main", origin).GetAwaiter().GetResult();
+        Git("remote", "add", "origin", origin);
+        Git("push", "-q", "-u", "origin", "main", "feat/털깎기", "feat/울타리");
         Write("docs/설계.md", "## 구조\n\n- 목장\n- 양\n- 단추\n- 울타리\n");
         Commit("설계에 울타리 추가", "2026-09-28T08:30:00");
 
@@ -78,6 +80,14 @@ static class Demo
         }
 
         """.Replace("\r", "");
+
+    // 지난 실행 흔적 지우기 - .git 객체는 읽기 전용이라 속성부터 풂
+    static void Reset(string dir)
+    {
+        if (!Directory.Exists(dir)) return;
+        foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories)) File.SetAttributes(f, FileAttributes.Normal);
+        Directory.Delete(dir, true);
+    }
 
     static void Write(string path, string text)
     {

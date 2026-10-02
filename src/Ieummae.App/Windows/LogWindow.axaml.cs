@@ -23,7 +23,7 @@ public partial class LogWindow : IeumWindow
         DataContext = Model = model;
         if (model is null) return;
 
-        Opened += (_, _) => _ = model.LoadAsync();
+        Opened += (_, _) => _ = Task.WhenAll(model.LoadAsync(), model.Repo.LoadAsync());
         var rowMenu = new MenuFlyout();
         rowMenu.Opening += (_, _) => BuildRowMenu(rowMenu);
         List.ContextFlyout = rowMenu;
@@ -34,6 +34,43 @@ public partial class LogWindow : IeumWindow
         // 테마 전환 - 이름표 점 색은 만들 때 정해지므로 목록 다시 연결
         Tone.Changed += RebindRows;
         Closed += (_, _) => Tone.Changed -= RebindRows;
+
+        // 원격·브랜치 동작 - 끝나면 새로 고침
+        var act = new Actions(this, model.Repo);
+        FetchButton.Click += (_, _) => Run(act.FetchAsync);
+        PullButton.Click += (_, _) => Run(act.PullAsync);
+        PushButton.Click += (_, _) => Run(act.PushAsync);
+        Chip.Tapped += (_, _) => Run(act.SwitchAsync);
+        var more = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedRight };
+        void Add(string header, Func<Task<bool>> run)
+        {
+            var mi = new MenuItem { Header = header };
+            mi.Click += (_, _) => Run(run);
+            more.Items.Add(mi);
+        }
+        Add("Switch", act.SwitchAsync);
+        Add("New Branch", act.NewBranchAsync);
+        Add("Delete Branch", act.DeleteBranchAsync);
+        Add("Merge", act.MergeAsync);
+        Add("Rebase", act.RebaseAsync);
+        more.Items.Add(new Separator());
+        Add("Stash", act.StashAsync);
+        Add("Stash List", act.StashesAsync);
+        more.Items.Add(new Separator());
+        Add("Tags", act.TagsAsync);
+        Add("Remotes", act.RemotesAsync);
+        MoreButton.Flyout = more;
+        Actions = act;
+    }
+
+    public Actions? Actions { get; }
+
+    // 동작 하나 실행 - 대화 상자 열려 있으면 무시, 끝나면 목록·브랜치 새로 고침
+    async void Run(Func<Task<bool>> action)
+    {
+        if (DialogOpen) return;
+        if (await action()) await ReloadAsync();
+        else await Model!.Repo.LoadAsync();
     }
 
     void RebindRows()
