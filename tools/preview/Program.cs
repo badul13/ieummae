@@ -37,7 +37,18 @@ var cases = new List<(string Name, string Label, bool Dark, Func<Window> Create,
     ("diff-split", "Diff 좌우 · 데모 작업 트리", true, () => Open("diff", Path.Combine(demo, "src", "Flock.cs")), w => Diff(w).IsSplit = true),
     ("diff-untracked", "Diff 새 파일 · 데모", false, () => Open("diff", Path.Combine(demo, "메모.txt")), w => Diff(w).IsSplit = false),
     ("message", "저장소 밖 안내", true, () => Open("log", Path.GetTempPath()), null),
+    ("log-demo", "Log · 데모 (병합·태그·원격 없음)", false, () => Open("log", demo), null),
+    ("log-file", "Log · 파일 하나 (src/Shear.cs)", true, () => Open("log", Path.Combine(demo, "src", "Shear.cs")), null),
+    ("log-search", "Log · 검색 '울타리'", false, () => Open("log", demo), w => { var m = (LogModel)w.DataContext!; m.Search = "울타리"; m.ApplySearch(); }),
+    ("dialog-reset", "대화 상자 · 고르기", true, () => Open("log", demo), w => _ = ((IeumWindow)w).ChooseAsync("Reset main", "main 을 a1b2c3d4 \"설계 문서 추가\" 로 이동", [
+        ("Soft", "커밋만 되돌림 - 변경 내용은 스테이징된 채로 남음"),
+        ("Mixed", "커밋과 스테이징 되돌림 - 변경 내용은 작업 트리에 남음"),
+        ("Hard", "작업 트리까지 되돌림 - 커밋 안 한 변경 사라짐")], "Reset", 1)),
+    ("dialog-branch", "대화 상자 · 이름 입력", false, () => Open("log", demo), w => _ = ((IeumWindow)w).PromptAsync("New Branch", "a1b2c3d4 에서 시작하는 브랜치 이름", "feat/단추", "Create", "만든 뒤 Checkout", true)),
 };
+// 대형 저장소 - IEUM_BIGREPO 지정 시 (커밋 수만 개 첫 화면 확인)
+if (Environment.GetEnvironmentVariable("IEUM_BIGREPO") is { Length: > 0 } big)
+    cases.Add(("log-big", "Log · 대형 저장소", true, () => Open("log", big), _ => Pump(200)));
 
 var shots = new List<(string File, string Label)>();
 foreach (var c in cases)

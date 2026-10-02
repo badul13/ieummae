@@ -51,6 +51,9 @@ public static class Tone
         // 선택·호버 - 강조색 반투명이라 뜨개 무늬 비침
         C("Sel", dark ? "#3AD3A27A" : "#26A57A55"); C("Hover", dark ? "#18D3A27A" : "#12A57A55");
         C("Stitch", p.Stitch); C("CardStitch", dark ? "#5A524A" : "#CDBDA3");
+        // 이름표 - HEAD 브랜치 / 브랜치 / 원격 / 태그
+        C("BadgeHead", dark ? "#4D3B2E" : "#EEDCCB"); C("BadgeBranch", p.Surface2);
+        C("BadgeRemote", dark ? "#2F3A44" : "#E4ECF3"); C("BadgeTag", dark ? "#47402B" : "#F4EACB");
         // 원격 버튼 천 - 다크는 바탕과 묻혀서 한 톤 밝게
         C("RemoteBg", dark ? "#3A3531" : p.Surface);
         // 뜨개 패널 실 색 - 흰 양털(로그) / 오트밀(Changes)

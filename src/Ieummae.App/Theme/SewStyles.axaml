@@ -92,4 +92,43 @@
   <Style Selector="MenuFlyoutPresenter Separator">
     <Setter Property="Background" Value="{DynamicResource Stitch}" />
   </Style>
+
+  <Style Selector="SelectableTextBlock.hand">
+    <Setter Property="FontFamily" Value="{DynamicResource FontHand}" />
+    <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+    <Setter Property="FontSize" Value="16" />
+  </Style>
+  <!-- 입력 칸 - 천 바탕 + 실 색 테두리, 누르면 강조색 -->
+  <Style Selector="TextBox.sew">
+    <Setter Property="Background" Value="{DynamicResource Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Stitch}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource Text}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource AccentLine}" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontJua}" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="Padding" Value="10,6" />
+  </Style>
+  <Style Selector="TextBox.sew:pointerover /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentLine}" />
+  </Style>
+  <Style Selector="TextBox.sew:focus /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+  </Style>
+  <Style Selector="TextBox.sew">
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource Muted}" />
+  </Style>
+  <Style Selector="CheckBox, RadioButton">
+    <Setter Property="Foreground" Value="{DynamicResource Text}" />
+  </Style>
+  <!-- 이름표 - 브랜치·태그·원격 -->
+  <Style Selector="Border.badge">
+    <Setter Property="CornerRadius" Value="3,9,9,3" />
+    <Setter Property="Padding" Value="6,1,9,1" />
+  </Style>
 </Styles>

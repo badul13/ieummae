@@ -1,0 +1,45 @@
+<w:IeumWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:w="clr-namespace:Ieummae.App.Windows"
+        xmlns:v="clr-namespace:Ieummae.App.Views"
+        xmlns:git="clr-namespace:Ieummae.Core.Git;assembly=Ieummae.Core"
+        xmlns:theme="clr-namespace:Ieummae.App.Theme"
+        x:Class="Ieummae.App.Windows.ChangesWindow"
+        x:DataType="w:RepoModel"
+        Width="1240" Height="800">
+  <!-- 두 커밋 비교 - 변경 파일 목록 + 고른 파일 diff -->
+  <Grid RowDefinitions="156,Auto,*">
+    <w:WoolTop />
+    <StackPanel Grid.Row="1" Margin="28,12,26,12" Orientation="Horizontal" Spacing="10" Height="40">
+      <TextBlock Text="Compare" FontSize="22" VerticalAlignment="Center" />
+      <TextBlock Text="{Binding Name}" Classes="hand" VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+      <TextBlock x:Name="SpecText" Classes="hand" VerticalAlignment="Center" Margin="6,0,0,0" />
+    </StackPanel>
+    <Grid Grid.Row="2" ColumnDefinitions="360,*" Margin="20,0,20,20">
+      <theme:KnitPanel Yarn="Knit2" Padding="20,18,14,12">
+        <DockPanel>
+          <TextBlock x:Name="TitleText" DockPanel.Dock="Top" Text="Changes" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" Margin="0,0,0,6" />
+          <ListBox x:Name="Files" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="git:ChangedFile">
+                <Grid ColumnDefinitions="*,Auto" Margin="4,3,10,3" ToolTip.Tip="{Binding Path}">
+                  <StackPanel>
+                    <TextBlock Text="{Binding Name}" TextTrimming="{x:Static theme:DotsTrimming.End}" />
+                    <TextBlock Text="{Binding Dir}" Classes="hand" FontSize="13.5" TextTrimming="{x:Static theme:DotsTrimming.Start}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Added, StringFormat='+{0}'}" Foreground="{DynamicResource AddFg}" FontSize="13.5" />
+                    <TextBlock Text="{Binding Deleted, StringFormat='-{0}'}" Foreground="{DynamicResource DelFg}" FontSize="13.5" />
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </theme:KnitPanel>
+      <theme:KnitPanel Grid.Column="1" Margin="16,0,0,0" Padding="16,18,16,14">
+        <v:DiffView x:Name="Diff" />
+      </theme:KnitPanel>
+    </Grid>
+  </Grid>
+</w:IeumWindow>

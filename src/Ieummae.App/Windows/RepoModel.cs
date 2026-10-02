@@ -7,6 +7,8 @@ namespace Ieummae.App.Windows;
 // 창 공통 저장소 정보 - 이름은 바로, 브랜치는 창 표시 후 git 으로
 public sealed class RepoModel(Repository repo) : INotifyPropertyChanged
 {
+    public const string Detached = "detached HEAD";
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public Repository Repo { get; } = repo;
@@ -17,7 +19,7 @@ public sealed class RepoModel(Repository repo) : INotifyPropertyChanged
 
     public async Task LoadAsync()
     {
-        Branch = await Repo.BranchAsync() ?? "detached HEAD";
+        Branch = await Repo.BranchAsync() ?? Detached;
     }
 
     void Set<T>(ref T field, T value, [CallerMemberName] string name = "")

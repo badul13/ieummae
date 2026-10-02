@@ -1,66 +1,128 @@
 <w:IeumWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:w="clr-namespace:Ieummae.App.Windows"
+        xmlns:v="clr-namespace:Ieummae.App.Views"
+        xmlns:git="clr-namespace:Ieummae.Core.Git;assembly=Ieummae.Core"
         xmlns:theme="clr-namespace:Ieummae.App.Theme"
         x:Class="Ieummae.App.Windows.LogWindow"
-        x:DataType="w:RepoModel"
-        Width="1240" Height="800">
+        x:DataType="w:LogModel"
+        Width="1240" Height="800" MinWidth="900" MinHeight="560">
+  <w:IeumWindow.Styles>
+    <Style Selector="Border.badge.head"><Setter Property="Background" Value="{DynamicResource BadgeHead}" /></Style>
+    <Style Selector="Border.badge.branch"><Setter Property="Background" Value="{DynamicResource BadgeBranch}" /></Style>
+    <Style Selector="Border.badge.remote"><Setter Property="Background" Value="{DynamicResource BadgeRemote}" /></Style>
+    <Style Selector="Border.badge.tag"><Setter Property="Background" Value="{DynamicResource BadgeTag}" /></Style>
+    <Style Selector="Border.badge.head TextBlock"><Setter Property="FontWeight" Value="Bold" /></Style>
+  </w:IeumWindow.Styles>
   <Grid RowDefinitions="156,Auto,*">
     <w:WoolTop />
 
-    <!-- 제목 줄 - 저장소·브랜치, 원격 버튼, Commit, 더보기 -->
+    <!-- 제목 줄 - 저장소·브랜치·경로, 원격 버튼, Commit, 더보기 -->
     <DockPanel Grid.Row="1" Margin="28,12,26,12">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
-        <Button Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
+        <Button x:Name="FetchButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
           <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Fetch" VerticalAlignment="Center" /></StackPanel>
         </Button>
-        <Button Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
+        <Button x:Name="PullButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
           <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Pull" VerticalAlignment="Center" /></StackPanel>
         </Button>
-        <Button Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
+        <Button x:Name="PushButton" Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
           <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Push" VerticalAlignment="Center" /></StackPanel>
         </Button>
-        <Button Classes="patch hot" Content="Commit" />
+        <Button x:Name="CommitButton" Classes="patch hot" Content="Commit" />
         <!-- 더보기 - 버튼에 없는 나머지 명령, 점 셋은 Jua 에 … 글자가 없어 직접 그림 -->
-        <Button Classes="patch" Padding="12,8" ToolTip.Tip="More">
+        <Button x:Name="MoreButton" Classes="patch" Padding="12,8" ToolTip.Tip="More">
           <StackPanel Orientation="Horizontal" Spacing="3.5" Height="20" VerticalAlignment="Center">
             <Ellipse Width="4.5" Height="4.5" Fill="{DynamicResource Text}" VerticalAlignment="Center" />
             <Ellipse Width="4.5" Height="4.5" Fill="{DynamicResource Text}" VerticalAlignment="Center" />
             <Ellipse Width="4.5" Height="4.5" Fill="{DynamicResource Text}" VerticalAlignment="Center" />
           </StackPanel>
-          <Button.Flyout>
-            <MenuFlyout Placement="BottomEdgeAlignedRight">
-              <MenuItem Header="Switch" />
-              <MenuItem Header="New Branch" />
-              <MenuItem Header="Merge" />
-              <MenuItem Header="Rebase" />
-              <Separator />
-              <MenuItem Header="Stash" />
-              <MenuItem Header="Stash Pop" />
-              <Separator />
-              <MenuItem Header="Tag" />
-              <MenuItem Header="Remotes" />
-              <Separator />
-              <MenuItem Header="설정" />
-            </MenuFlyout>
-          </Button.Flyout>
         </Button>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-        <TextBlock Text="{Binding Name}" FontSize="22" VerticalAlignment="Center" />
-        <w:BranchChip />
+        <TextBlock Text="{Binding Repo.Name}" FontSize="22" VerticalAlignment="Center" />
+        <w:BranchChip DataContext="{Binding Repo}" />
+        <Border Classes="badge" Background="{DynamicResource Surface}" IsVisible="{Binding HasPath}" VerticalAlignment="Center">
+          <TextBlock Text="{Binding PathText}" FontSize="13.5" />
+        </Border>
+        <TextBlock Text="{Binding CountText}" Classes="hand" VerticalAlignment="Center" Margin="4,0,0,0" />
       </StackPanel>
     </DockPanel>
 
-    <!-- 본문 - 커밋 목록(3단계) / 커밋 정보·Changes -->
-    <Grid Grid.Row="2" ColumnDefinitions="*,380" Margin="20,0,20,20">
-      <theme:KnitPanel Padding="12,16,12,14" />
-      <DockPanel Grid.Column="1" Margin="16,0,0,0">
-        <ContentControl DockPanel.Dock="Top" Classes="patch hot" MinHeight="120" />
-        <theme:KnitPanel Yarn="Knit2" Margin="0,14,0,0" Padding="22,18,18,16">
-          <TextBlock Text="Changes" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" VerticalAlignment="Top" />
+    <Grid Grid.Row="2" ColumnDefinitions="*,390" Margin="20,0,20,20">
+      <!-- 커밋 목록 - 검색 칸 + 그래프·이름표·제목·작성자·시간 -->
+      <theme:KnitPanel Padding="14,16,12,12">
+        <DockPanel>
+          <TextBox DockPanel.Dock="Top" Classes="sew" PlaceholderText="검색 - 제목, 작성자, 해시" Text="{Binding Search}" Margin="4,0,8,8" />
+          <Panel>
+            <TextBlock Text="{Binding Error}" Classes="hand" TextWrapping="Wrap" Margin="12" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <ListBox x:Name="List" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" SelectionMode="Multiple"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="v:LogRow">
+                  <Grid ColumnDefinitions="Auto,*,Auto" Height="34">
+                    <v:GraphCell Row="{Binding}" Width="{Binding Graph.Width}" ClipToBounds="True" />
+                    <DockPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0">
+                      <ItemsControl DockPanel.Dock="Left" Margin="0,0,7,0" ItemsSource="{Binding Badges}" IsVisible="{Binding HasBadges}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="5" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="v:BadgeView">
+                            <Border Classes="badge" Classes.head="{Binding IsHead}" Classes.branch="{Binding IsBranch}" Classes.remote="{Binding IsRemote}" Classes.tag="{Binding IsTag}">
+                              <StackPanel Orientation="Horizontal" Spacing="5">
+                                <Ellipse Width="6" Height="6" Fill="{DynamicResource Surface}" Stroke="{Binding DotBrush}" StrokeThickness="1.4" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Text}" FontSize="13" />
+                              </StackPanel>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <TextBlock Text="{Binding Subject}" FontSize="15" TextTrimming="{x:Static theme:DotsTrimming.End}" />
+                    </DockPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="10,0,10,0">
+                      <TextBlock Text="{Binding Author}" Classes="hand" MaxWidth="140" TextTrimming="{x:Static theme:DotsTrimming.End}" />
+                      <TextBlock Text="{Binding Rel}" Classes="hand" Foreground="{DynamicResource Accent}" MinWidth="70" TextAlignment="Right" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Panel>
+        </DockPanel>
+      </theme:KnitPanel>
+
+      <!-- 선택 커밋 - 정보 카드 + 변경 파일 (두 번 누르면 diff) -->
+      <Grid Grid.Column="1" Margin="16,0,0,0" RowDefinitions="Auto,*">
+        <ContentControl Classes="patch hot" MaxHeight="300">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="7" Margin="0,0,12,0">
+              <SelectableTextBlock Text="{Binding Info.Hash, FallbackValue=''}" Classes="hand" FontSize="14" />
+              <TextBlock Text="{Binding Info.Subject, FallbackValue=''}" FontSize="17" TextWrapping="Wrap" />
+              <SelectableTextBlock Text="{Binding BodyText}" IsVisible="{Binding HasBody}" Foreground="{DynamicResource Muted}" TextWrapping="Wrap" LineHeight="20" />
+              <TextBlock Text="{Binding MetaText}" Classes="hand" Margin="0,2,0,0" />
+              <TextBlock Text="{Binding ParentsText}" Classes="hand" FontSize="14" />
+            </StackPanel>
+          </ScrollViewer>
+        </ContentControl>
+        <theme:KnitPanel Grid.Row="1" Yarn="Knit2" Margin="0,14,0,0" Padding="20,18,14,12">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="{Binding ChangesTitle}" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" Margin="0,0,0,6" />
+            <ListBox x:Name="FileList" ItemsSource="{Binding Changes}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="git:ChangedFile">
+                  <Grid ColumnDefinitions="14,*,Auto" Margin="2,4,10,4" Background="Transparent" ToolTip.Tip="{Binding Path}">
+                    <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentLine}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="{x:Static theme:DotsTrimming.End}" Margin="4,0,0,0" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0">
+                      <TextBlock Text="{Binding Added, StringFormat='+{0}'}" Foreground="{DynamicResource AddFg}" FontSize="13.5" />
+                      <TextBlock Text="{Binding Deleted, StringFormat='-{0}'}" Foreground="{DynamicResource DelFg}" FontSize="13.5" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
         </theme:KnitPanel>
-      </DockPanel>
+      </Grid>
     </Grid>
   </Grid>
 </w:IeumWindow>

@@ -7,17 +7,6 @@ public partial class BranchChip : UserControl
     public BranchChip() => InitializeComponent();
 }
 
-public partial class LogWindow : IeumWindow
-{
-    public LogWindow() : this(null) { }
-
-    public LogWindow(RepoModel? model)
-    {
-        InitializeComponent();
-        DataContext = model;
-    }
-}
-
 public partial class CommitWindow : IeumWindow
 {
     public CommitWindow() : this(null) { }
