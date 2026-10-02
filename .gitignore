@@ -14,3 +14,5 @@ target/
 bin/
 obj/
 out/
+# 측정 도구 소스 - 위 bin/ 규칙 예외
+!tools/bench/src/bin/

@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ieummae.App/Ieummae.App.csproj" />
+    <Project Path="src/Ieummae.Core/Ieummae.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ieummae.Core.Tests/Ieummae.Core.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/" />
+  <Folder Name="/tools/preview/">
+    <Project Path="tools/preview/Ieummae.Preview.csproj" />
+  </Folder>
+</Solution>

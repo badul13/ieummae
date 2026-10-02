@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:theme="clr-namespace:Ieummae.App.Theme"
+             x:Class="Ieummae.App.Windows.WoolTop">
+  <!-- 창 윗부분 - 양털 머리, 왼쪽에 앱 이름·테마 단추 -->
+  <Panel Height="156">
+    <theme:WoolHeader IsHitTestVisible="False" />
+    <StackPanel Margin="26,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Horizontal" Spacing="12">
+      <TextBlock Text="ieummae" FontFamily="{DynamicResource FontHand}" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource Muted}" VerticalAlignment="Center" IsHitTestVisible="False" />
+      <!-- 테마 - 흰 단추 / 숯색 단추, 꿰맨 쪽이 지금 테마 -->
+      <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+        <Button Classes="bare" Click="OnLight" ToolTip.Tip="Light"><theme:ThemeButton Dark="False" /></Button>
+        <Button Classes="bare" Click="OnDark" ToolTip.Tip="Dark"><theme:ThemeButton Dark="True" /></Button>
+      </StackPanel>
+    </StackPanel>
+  </Panel>
+</UserControl>

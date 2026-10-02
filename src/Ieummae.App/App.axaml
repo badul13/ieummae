@@ -1,0 +1,68 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Ieummae.App.App">
+  <Application.Resources>
+    <!-- 창 장식 - 제목 글자·전체 화면 버튼 없음, 캡션 버튼은 톤 색 -->
+    <ControlTheme x:Key="IeumCaption" TargetType="Button">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+      <Setter Property="Width" Value="46" />
+      <Setter Property="(WindowDecorationProperties.ElementRole)" Value="DecorationsElement" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}" Content="{TemplateBinding Content}" />
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Surface2}" />
+      </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations">
+      <Setter Property="DefaultTitleBarHeight" Value="44" />
+      <Setter Property="DefaultFrameThickness" Value="1" />
+      <Setter Property="DefaultShadowThickness" Value="8" />
+      <Setter Property="Template">
+        <WindowDrawnDecorationsTemplate>
+          <WindowDrawnDecorationsContent>
+            <WindowDrawnDecorationsContent.Underlay>
+              <Panel>
+                <Border BorderThickness="{TemplateBinding FrameThickness}" BorderBrush="{DynamicResource Line}" IsHitTestVisible="False" />
+                <Panel VerticalAlignment="Top" Height="{TemplateBinding TitleBarHeight}" Background="Transparent"
+                       IsVisible="{TemplateBinding HasTitleBar}" WindowDecorationProperties.ElementRole="TitleBar" />
+              </Panel>
+            </WindowDrawnDecorationsContent.Underlay>
+            <WindowDrawnDecorationsContent.Overlay>
+              <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Height="{TemplateBinding TitleBarHeight}"
+                          IsVisible="{TemplateBinding HasTitleBar}" Orientation="Horizontal">
+                <Button Theme="{StaticResource IeumCaption}" WindowDecorationProperties.ElementRole="MinimizeButton">
+                  <Path Width="10" Height="1" Stretch="Fill" Fill="{DynamicResource Muted}" Data="M0 0h10v1h-10z" />
+                </Button>
+                <Button Theme="{StaticResource IeumCaption}" WindowDecorationProperties.ElementRole="MaximizeButton">
+                  <Path Width="10" Height="10" Stretch="Fill" Stroke="{DynamicResource Muted}" StrokeThickness="1" Data="M0.5 0.5h9v9h-9z" />
+                </Button>
+                <Button Theme="{StaticResource IeumCaption}" WindowDecorationProperties.ElementRole="CloseButton">
+                  <Path Width="10" Height="10" Stretch="Fill" Stroke="{DynamicResource Muted}" StrokeThickness="1" Data="M0 0L10 10M10 0L0 10" />
+                </Button>
+              </StackPanel>
+            </WindowDrawnDecorationsContent.Overlay>
+          </WindowDrawnDecorationsContent>
+        </WindowDrawnDecorationsTemplate>
+      </Setter>
+    </ControlTheme>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+    <Style Selector="ListBox">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <!-- 바느질 스타일 - 위 기본값 다음에 와야 덮어씀 -->
+    <StyleInclude Source="avares://ieummae/Theme/SewStyles.axaml" />
+  </Application.Styles>
+</Application>

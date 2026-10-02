@@ -1,0 +1,66 @@
+<w:IeumWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:w="clr-namespace:Ieummae.App.Windows"
+        xmlns:theme="clr-namespace:Ieummae.App.Theme"
+        x:Class="Ieummae.App.Windows.LogWindow"
+        x:DataType="w:RepoModel"
+        Width="1240" Height="800">
+  <Grid RowDefinitions="156,Auto,*">
+    <w:WoolTop />
+
+    <!-- 제목 줄 - 저장소·브랜치, 원격 버튼, Commit, 더보기 -->
+    <DockPanel Grid.Row="1" Margin="28,12,26,12">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+        <Button Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
+          <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Fetch" VerticalAlignment="Center" /></StackPanel>
+        </Button>
+        <Button Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
+          <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Pull" VerticalAlignment="Center" /></StackPanel>
+        </Button>
+        <Button Classes="patch" Background="{DynamicResource RemoteBg}" Padding="12,8,16,8">
+          <StackPanel Orientation="Horizontal" Spacing="6"><theme:SewDot VerticalAlignment="Center" /><TextBlock Text="Push" VerticalAlignment="Center" /></StackPanel>
+        </Button>
+        <Button Classes="patch hot" Content="Commit" />
+        <!-- 더보기 - 버튼에 없는 나머지 명령, 점 셋은 Jua 에 … 글자가 없어 직접 그림 -->
+        <Button Classes="patch" Padding="12,8" ToolTip.Tip="More">
+          <StackPanel Orientation="Horizontal" Spacing="3.5" Height="20" VerticalAlignment="Center">
+            <Ellipse Width="4.5" Height="4.5" Fill="{DynamicResource Text}" VerticalAlignment="Center" />
+            <Ellipse Width="4.5" Height="4.5" Fill="{DynamicResource Text}" VerticalAlignment="Center" />
+            <Ellipse Width="4.5" Height="4.5" Fill="{DynamicResource Text}" VerticalAlignment="Center" />
+          </StackPanel>
+          <Button.Flyout>
+            <MenuFlyout Placement="BottomEdgeAlignedRight">
+              <MenuItem Header="Switch" />
+              <MenuItem Header="New Branch" />
+              <MenuItem Header="Merge" />
+              <MenuItem Header="Rebase" />
+              <Separator />
+              <MenuItem Header="Stash" />
+              <MenuItem Header="Stash Pop" />
+              <Separator />
+              <MenuItem Header="Tag" />
+              <MenuItem Header="Remotes" />
+              <Separator />
+              <MenuItem Header="설정" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <TextBlock Text="{Binding Name}" FontSize="22" VerticalAlignment="Center" />
+        <w:BranchChip />
+      </StackPanel>
+    </DockPanel>
+
+    <!-- 본문 - 커밋 목록(3단계) / 커밋 정보·Changes -->
+    <Grid Grid.Row="2" ColumnDefinitions="*,380" Margin="20,0,20,20">
+      <theme:KnitPanel Padding="12,16,12,14" />
+      <DockPanel Grid.Column="1" Margin="16,0,0,0">
+        <ContentControl DockPanel.Dock="Top" Classes="patch hot" MinHeight="120" />
+        <theme:KnitPanel Yarn="Knit2" Margin="0,14,0,0" Padding="22,18,18,16">
+          <TextBlock Text="Changes" Classes="hand" FontWeight="Bold" Foreground="{DynamicResource Text}" FontSize="18" VerticalAlignment="Top" />
+        </theme:KnitPanel>
+      </DockPanel>
+    </Grid>
+  </Grid>
+</w:IeumWindow>
