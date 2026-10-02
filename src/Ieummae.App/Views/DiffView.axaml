@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:Ieummae.App.Views"
+             xmlns:theme="clr-namespace:Ieummae.App.Theme"
+             x:Class="Ieummae.App.Views.DiffView"
+             x:DataType="v:DiffView">
+  <UserControl.Styles>
+    <Style Selector="Border.add"><Setter Property="Background" Value="{DynamicResource AddBg}" /></Style>
+    <Style Selector="Border.del"><Setter Property="Background" Value="{DynamicResource DelBg}" /></Style>
+    <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource Surface2}" /></Style>
+    <Style Selector="Border.empty"><Setter Property="Background" Value="{DynamicResource Surface2}" /><Setter Property="Opacity" Value="0.55" /></Style>
+    <Style Selector="Border.add TextBlock.sign"><Setter Property="Foreground" Value="{DynamicResource AddFg}" /></Style>
+    <Style Selector="Border.del TextBlock.sign"><Setter Property="Foreground" Value="{DynamicResource DelFg}" /></Style>
+    <Style Selector="TextBlock.hunk">
+      <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+      <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="Margin" Value="10,3" />
+    </Style>
+    <Style Selector="TextBlock.no">
+      <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="TextAlignment" Value="Right" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="Padding" Value="0,1,0,0" />
+    </Style>
+    <Style Selector="TextBlock.code">
+      <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="TextBlock.toggle">
+      <Setter Property="FontFamily" Value="{DynamicResource FontHand}" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="Foreground" Value="{DynamicResource Muted}" />
+    </Style>
+    <Style Selector="TextBlock.toggle.on">
+      <Setter Property="Foreground" Value="{DynamicResource Text}" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <!-- 줄 목록은 선택·호버 표시 없음 -->
+    <Style Selector="ListBox.diff ListBoxItem /template/ ContentPresenter"><Setter Property="CornerRadius" Value="0" /></Style>
+    <Style Selector="ListBox.diff ListBoxItem:selected /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
+    <Style Selector="ListBox.diff ListBoxItem:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
+    <Style Selector="ListBox.diff ListBoxItem:selected:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <!-- 머리 - 파일 이름·폴더·줄 수, 보기 전환 -->
+    <DockPanel DockPanel.Dock="Top" Margin="10,0,10,10">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+        <Button Classes="bare" Click="OnWhitespace" ToolTip.Tip="공백 차이 무시">
+          <TextBlock Text="Ignore whitespace" Classes="toggle" Classes.on="{Binding IgnoreWhitespace}" />
+        </Button>
+        <Button Classes="bare" Click="OnUnified"><TextBlock Text="Unified" Classes="toggle" Classes.on="{Binding !IsSplit}" /></Button>
+        <Button Classes="bare" Click="OnSplit"><TextBlock Text="Split" Classes="toggle" Classes.on="{Binding IsSplit}" /></Button>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <TextBlock Text="{Binding FileName}" FontSize="18" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding Dir}" Classes="hand" VerticalAlignment="Center" TextTrimming="{x:Static theme:DotsTrimming.Start}" MaxWidth="360" />
+        <TextBlock Text="{Binding AddText}" Foreground="{DynamicResource AddFg}" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding DelText}" Foreground="{DynamicResource DelFg}" VerticalAlignment="Center" />
+      </StackPanel>
+    </DockPanel>
+
+    <Panel>
+      <!-- 안내 - 바이너리, 변경 없음, 불러오는 중 -->
+      <TextBlock Text="{Binding Notice}" Classes="hand" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"
+                 IsVisible="{Binding Notice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+      <ListBox Classes="diff" ItemsSource="{Binding Unified}" IsVisible="{Binding !IsSplit}"
+               ScrollViewer.HorizontalScrollBarVisibility="Auto">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="v:UnifiedRow">
+            <Border Classes.add="{Binding IsAdd}" Classes.del="{Binding IsDel}" Classes.hunk="{Binding IsHunk}">
+              <Panel>
+                <TextBlock Text="{Binding HunkText}" Classes="hunk" IsVisible="{Binding IsHunk}" />
+                <Grid ColumnDefinitions="48,48,18,*" IsVisible="{Binding !IsHunk}" Margin="0,1">
+                  <TextBlock Text="{Binding OldNo}" Classes="no" />
+                  <TextBlock Grid.Column="1" Text="{Binding NewNo}" Classes="no" />
+                  <TextBlock Grid.Column="2" Text="{Binding Sign}" Classes="sign code" />
+                  <v:CodeLine Grid.Column="3" Line="{Binding Line}" Classes="code" Margin="0,0,16,0" />
+                </Grid>
+              </Panel>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <!-- 좌우 - 반반 고정, 긴 줄은 줄바꿈 (가로 스크롤하면 양쪽 폭이 어긋남) -->
+      <ListBox Classes="diff" ItemsSource="{Binding Split}" IsVisible="{Binding IsSplit}"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="v:SplitRowView">
+            <Panel>
+              <Border Classes="hunk" IsVisible="{Binding IsHunk}">
+                <TextBlock Text="{Binding HunkText}" Classes="hunk" />
+              </Border>
+              <Grid ColumnDefinitions="*,6,*" IsVisible="{Binding !IsHunk}">
+                <Border Classes.del="{Binding LeftDel}" Classes.empty="{Binding LeftEmpty}" Padding="0,1">
+                  <Grid ColumnDefinitions="48,*">
+                    <TextBlock Text="{Binding LeftNo}" Classes="no" />
+                    <v:CodeLine Grid.Column="1" Line="{Binding Left}" Classes="code" TextWrapping="Wrap" Margin="0,0,8,0" />
+                  </Grid>
+                </Border>
+                <Border Grid.Column="2" Classes.add="{Binding RightAdd}" Classes.empty="{Binding RightEmpty}" Padding="0,1">
+                  <Grid ColumnDefinitions="48,*">
+                    <TextBlock Text="{Binding RightNo}" Classes="no" />
+                    <v:CodeLine Grid.Column="1" Line="{Binding Right}" Classes="code" TextWrapping="Wrap" Margin="0,0,8,0" />
+                  </Grid>
+                </Border>
+              </Grid>
+            </Panel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Panel>
+  </DockPanel>
+</UserControl>

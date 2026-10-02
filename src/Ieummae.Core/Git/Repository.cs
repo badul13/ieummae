@@ -1,7 +1,7 @@
 namespace Ieummae.Core.Git;
 
 // 작업 트리 하나 - 최상위 경로 기준으로 git 실행
-public sealed class Repository
+public sealed partial class Repository
 {
     public string Root { get; }
     public string Name => Path.GetFileName(Root);

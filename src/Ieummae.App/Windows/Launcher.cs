@@ -7,10 +7,12 @@ namespace Ieummae.App.Windows;
 // 명령 → 창. 명령마다 새 프로세스라 창 하나만 띄움
 public static class Launcher
 {
-    static readonly Dictionary<string, (string Title, Func<RepoModel, Window> Create)> Commands = new()
+    static readonly Dictionary<string, (string Title, Func<RepoModel, CommandLine, Window> Create)> Commands = new()
     {
-        ["log"] = ("Log", m => new LogWindow(m)),
-        ["commit"] = ("Commit", m => new CommitWindow(m)),
+        ["log"] = ("Log", (m, _) => new LogWindow(m)),
+        ["commit"] = ("Commit", (m, _) => new CommitWindow(m)),
+        // 파일 하나 - 작업 트리 변경 (HEAD 대비)
+        ["diff"] = ("Diff", (m, c) => new DiffWindow(m, null, m.Repo.Relative(c.Path), "작업 트리 · HEAD 대비")),
     };
 
     public static Window Create(CommandLine cmd)
@@ -23,7 +25,7 @@ public static class Launcher
         else
         {
             var model = new RepoModel(repo);
-            w = c.Create(model);
+            w = c.Create(model, cmd);
             w.Title = $"{repo.Name} · {c.Title}";
             // 창이 뜬 뒤 git 조회 - 창 표시를 기다리게 하지 않음
             w.Opened += (_, _) => _ = model.LoadAsync();

@@ -46,6 +46,8 @@ public static class Tone
         C("Bg", p.Bg); C("Surface", p.Surface); C("Surface2", p.Surface2); C("Line", p.Line); C("Text", p.Text); C("Muted", p.Muted);
         C("Accent", p.Accent); C("AccentText", p.AccentText); C("AccentLine", p.AccentLine); C("AccentInk", p.AccentInk);
         C("AddFg", p.AddFg); C("DelFg", p.DelFg); C("AddBg", p.AddBg); C("DelBg", p.DelBg);
+        // 단어 단위 강조 - 줄 배경보다 한 톤 진하게
+        C("AddHi", dark ? "#3E6142" : "#C6DDBE"); C("DelHi", dark ? "#6A3B30" : "#EBC0B2");
         // 선택·호버 - 강조색 반투명이라 뜨개 무늬 비침
         C("Sel", dark ? "#3AD3A27A" : "#26A57A55"); C("Hover", dark ? "#18D3A27A" : "#12A57A55");
         C("Stitch", p.Stitch); C("CardStitch", dark ? "#5A524A" : "#CDBDA3");

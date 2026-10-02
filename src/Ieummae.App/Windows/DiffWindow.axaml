@@ -1,0 +1,21 @@
+<w:IeumWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:w="clr-namespace:Ieummae.App.Windows"
+        xmlns:v="clr-namespace:Ieummae.App.Views"
+        xmlns:theme="clr-namespace:Ieummae.App.Theme"
+        x:Class="Ieummae.App.Windows.DiffWindow"
+        x:DataType="w:RepoModel"
+        Width="1240" Height="800">
+  <Grid RowDefinitions="156,Auto,*">
+    <w:WoolTop />
+    <StackPanel Grid.Row="1" Margin="28,12,26,12" Orientation="Horizontal" Spacing="10" Height="40">
+      <TextBlock Text="Diff" FontSize="22" VerticalAlignment="Center" />
+      <TextBlock Text="{Binding Name}" Classes="hand" VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+      <w:BranchChip />
+      <TextBlock x:Name="SpecText" Classes="hand" VerticalAlignment="Center" Margin="6,0,0,0" />
+    </StackPanel>
+    <theme:KnitPanel Grid.Row="2" Margin="20,0,20,20" Padding="16,18,16,14">
+      <v:DiffView x:Name="Diff" />
+    </theme:KnitPanel>
+  </Grid>
+</w:IeumWindow>
