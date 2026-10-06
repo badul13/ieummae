@@ -43,6 +43,10 @@ static class Demo
         Git("push", "-q", "-u", "origin", "main", "feat/털깎기", "feat/울타리");
         Write("docs/설계.md", "## 구조\n\n- 목장\n- 양\n- 단추\n- 울타리\n");
         Commit("설계에 울타리 추가", "2026-09-28T08:30:00");
+        // 다른 워크트리 - feat/울타리 를 옆 폴더에서 체크아웃 (Switch 안내 확인용)
+        var fence = Root + "-울타리";
+        Reset(fence);
+        Git("worktree", "add", "-q", fence, "feat/울타리");
 
         // 작업 트리 변경 - 단어 단위 수정, 줄 추가·삭제, 새 파일, 삭제
         Write("src/Flock.cs", Flock("total", "Count").Replace("    // 무리 정리\n    public void Tidy() { }\n", "") + "\n// 다음: 울타리 연결\n");

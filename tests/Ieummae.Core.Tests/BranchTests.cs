@@ -74,6 +74,24 @@ public class RemoteTests
 public class BranchOpsTests
 {
     [Fact]
+    public async Task 다른_워크트리가_쓰는_브랜치는_그_폴더_표시()
+    {
+        using var t = await TempRepo.CreateAsync();
+        await t.GitAsync("commit", "-q", "--allow-empty", "-m", "첫");
+        await t.GitAsync("branch", "옆");
+        var other = t.Root + "-옆";
+        await t.GitAsync("worktree", "add", "-q", other, "옆");
+        try
+        {
+            var branches = await Repository.Discover(t.Root)!.BranchesAsync();
+            Assert.Equal(Path.GetFullPath(other), branches.Single(b => b.Name == "옆").Worktree);
+            // 지금 워크트리 브랜치는 null
+            Assert.Null(branches.Single(b => b.IsCurrent).Worktree);
+        }
+        finally { Directory.Delete(other, true); }
+    }
+
+    [Fact]
     public async Task 병합_리베이스_스태시_태그()
     {
         using var t = await TempRepo.CreateAsync();

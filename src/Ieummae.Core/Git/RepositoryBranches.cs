@@ -1,6 +1,7 @@
 namespace Ieummae.Core.Git;
 
-public sealed record BranchInfo(string Name, bool IsRemote, bool IsCurrent, string? Upstream, string Hash, DateTimeOffset Date)
+// Worktree - 다른 워크트리가 체크아웃 중이면 그 폴더, 아니면 null
+public sealed record BranchInfo(string Name, bool IsRemote, bool IsCurrent, string? Upstream, string Hash, DateTimeOffset Date, string? Worktree = null)
 {
     // 원격 브랜치의 로컬 이름 (origin/feat/x → feat/x)
     public string LocalName => IsRemote ? Name[(Name.IndexOf('/') + 1)..] : Name;
@@ -15,17 +16,20 @@ public sealed partial class Repository
     public async Task<List<BranchInfo>> BranchesAsync(CancellationToken ct = default)
     {
         var r = await RunAsync(["for-each-ref", "--sort=-committerdate",
-            "--format=%(refname)%00%(objectname:short)%00%(upstream:short)%00%(committerdate:unix)%00%(HEAD)",
+            "--format=%(refname)%00%(objectname:short)%00%(upstream:short)%00%(committerdate:unix)%00%(HEAD)%00%(worktreepath)",
             "refs/heads", "refs/remotes"], ct).ConfigureAwait(false);
         var list = new List<BranchInfo>();
         foreach (var line in r.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
             var f = line.Split('\0');
-            if (f.Length < 5 || f[0].EndsWith("/HEAD")) continue;
+            if (f.Length < 6 || f[0].EndsWith("/HEAD")) continue;
             bool remote = f[0].StartsWith("refs/remotes/");
             var name = remote ? f[0][13..] : f[0][11..];
-            list.Add(new BranchInfo(name, remote, f[4] == "*", f[2].Length > 0 ? f[2] : null, f[1],
-                DateTimeOffset.FromUnixTimeSeconds(long.TryParse(f[3], out var t) ? t : 0)));
+            bool current = f[4] == "*";
+            // 지금 워크트리는 HEAD 표시로 이미 구분 - 다른 워크트리만
+            var worktree = !current && f[5].Length > 0 ? Path.GetFullPath(f[5]) : null;
+            list.Add(new BranchInfo(name, remote, current, f[2].Length > 0 ? f[2] : null, f[1],
+                DateTimeOffset.FromUnixTimeSeconds(long.TryParse(f[3], out var t) ? t : 0), worktree));
         }
         return list;
     }

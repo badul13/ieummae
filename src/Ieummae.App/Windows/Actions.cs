@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ieummae.App.Views;
 using Ieummae.Core.Git;
 
@@ -50,9 +51,17 @@ public sealed class Actions(IDialogs w, RepoModel model)
         var locals = branches.Where(b => !b.IsRemote).Select(b => b.Name).ToHashSet();
         var all = branches.Where(b => !b.IsCurrent && !(b.IsRemote && locals.Contains(b.LocalName))).ToList();
         var pick = await w.PickAsync("Switch", "전환할 브랜치 - 원격 브랜치는 같은 이름 로컬 브랜치를 만들어 추적",
-            all.Select(b => (b.Name, $"{(b.IsRemote ? "원격" : b.Upstream ?? "로컬")} · {b.Hash} · {Ago(b.Date)}")).ToList(), ["Switch"]);
+            all.Select(b => (b.Name, $"{(b.IsRemote ? "원격" : b.Upstream ?? "로컬")} · {b.Hash} · {Ago(b.Date)}{(b.Worktree is null ? "" : " · 다른 워크트리에서 사용 중")}")).ToList(), ["Switch"]);
         if (pick is null) return false;
-        return await w.CheckAsync("Switch", Repo.SwitchAsync(all[pick.Index]));
+        var b = all[pick.Index];
+        // 다른 워크트리가 체크아웃 중 - git 은 전환 거부, 그 폴더로 안내
+        if (b.Worktree is { } dir)
+        {
+            if (await w.ConfirmAsync("Switch", $"{b.Name} 는 다른 워크트리에서 사용 중 - {dir}", "Open Folder"))
+                Process.Start(new ProcessStartInfo("explorer.exe", $"\"{dir}\"") { UseShellExecute = false });
+            return false;
+        }
+        return await w.CheckAsync("Switch", Repo.SwitchAsync(b));
     }
 
     public async Task<bool> NewBranchAsync()
