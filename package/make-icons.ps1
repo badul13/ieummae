@@ -90,6 +90,7 @@ foreach ($img in $images) { $w.Write($img) }
 [System.IO.File]::WriteAllBytes((Join-Path $root "src\Ieummae.App\Assets\ieummae.ico"), $ico.ToArray())
 
 # 탐색기 아이콘 표시 - 왼쪽 아래 작은 단추 + 기호 (정상 ✓, 수정 •, 충돌 !, 추가 +)
+# 탐색기가 파일 아이콘과 같은 크기로 겹쳐 그림 - 캔버스 58% 단추만, 나머지 투명 (TortoiseGit 50~60%)
 function Overlay([int]$size, [string]$kind) {
     $bmp = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -97,7 +98,10 @@ function Overlay([int]$size, [string]$kind) {
     $g.Clear([System.Drawing.Color]::Transparent)
     $colors = @{ normal = "#5BA36B"; modified = "#D9893A"; conflict = "#C9483E"; added = "#4C86C6" }
     $c = [System.Drawing.ColorTranslator]::FromHtml($colors[$kind])
-    $s = $size / 16.0
+    # 단추 그림은 16 단위 좌표 - 단추 크기로 줄여 왼쪽 아래로
+    $badge = [Math]::Max(5, [Math]::Round($size * 0.58))
+    $g.TranslateTransform(0, $size - $badge)
+    $s = $badge / 16.0
     # 단추 - 진한 테두리, 흰 실 기호
     $dark = [System.Drawing.Color]::FromArgb(255, [int]($c.R * 0.65), [int]($c.G * 0.65), [int]($c.B * 0.65))
     $g.FillEllipse((New-Object System.Drawing.SolidBrush $c), 0.5 * $s, 0.5 * $s, 15 * $s, 15 * $s)
@@ -115,14 +119,14 @@ function Overlay([int]$size, [string]$kind) {
 }
 
 function Ico([int[]]$sizes, [scriptblock]$draw, [string]$path) {
-    $images = foreach ($n in $sizes) { , (Dib (& $draw $n)) }
+    $images = foreach ($n in $sizes) { if ($n -ge 256) { , (Png (& $draw $n)) } else { , (Dib (& $draw $n)) } }
     $ico = New-Object System.IO.MemoryStream
     $w = New-Object System.IO.BinaryWriter $ico
     $w.Write([uint16]0); $w.Write([uint16]1); $w.Write([uint16]$sizes.Count)
     $offset = 6 + 16 * $sizes.Count
     for ($i = 0; $i -lt $sizes.Count; $i++) {
         $n = $sizes[$i]
-        $w.Write([byte]$n); $w.Write([byte]$n); $w.Write([byte]0); $w.Write([byte]0)
+        $w.Write([byte]($n % 256)); $w.Write([byte]($n % 256)); $w.Write([byte]0); $w.Write([byte]0)
         $w.Write([uint16]1); $w.Write([uint16]32)
         $w.Write([uint32]$images[$i].Length); $w.Write([uint32]$offset)
         $offset += $images[$i].Length
@@ -135,7 +139,7 @@ $ovDir = Join-Path $PSScriptRoot "overlays"
 New-Item -ItemType Directory -Force $ovDir | Out-Null
 foreach ($kind in "normal", "modified", "conflict", "added") {
     $k = $kind
-    Ico @(8, 10, 12, 16, 20, 24, 32, 48) { param($n) Overlay $n $k } (Join-Path $ovDir "$kind.ico")
+    Ico @(8, 10, 12, 16, 20, 24, 32, 48, 64, 128, 256) { param($n) Overlay $n $k } (Join-Path $ovDir "$kind.ico")
 }
 
 # 패키지 로고

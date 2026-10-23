@@ -24,6 +24,12 @@ Pop-Location
 # 2) 복사 - 실행 중인 캐시는 먼저 종료 (파일 잠금)
 Get-Process ieummae-cache -ErrorAction SilentlyContinue | Stop-Process -Force
 New-Item -ItemType Directory -Force (Join-Path $InstallDir "overlays") | Out-Null
+# 다시 설치 - 탐색기·dllhost·열린 창이 잡은 DLL·exe 는 덮어쓰기 불가, 이름 바꾸기는 가능
+# 기존 파일을 .old 로 비키고 새로 복사, .old 는 다음 설치 때 정리 (아직 잡혀 있으면 남김)
+Get-ChildItem $InstallDir -Filter *.old -File | Remove-Item -Force -ErrorAction SilentlyContinue
+Get-ChildItem $InstallDir -File | Where-Object Extension -in ".dll", ".exe" | ForEach-Object {
+    Move-Item $_.FullName "$($_.FullName).$([DateTime]::Now.Ticks).old" -Force
+}
 Copy-Item (Join-Path $root "out\app\*") $InstallDir -Recurse -Force -Exclude *.pdb
 $shellOut = Join-Path $root "shell\target\release"
 Copy-Item (Join-Path $shellOut "ieummae_menu.dll"), (Join-Path $shellOut "ieummae_overlay.dll"), (Join-Path $shellOut "ieummae-cache.exe") $InstallDir -Force

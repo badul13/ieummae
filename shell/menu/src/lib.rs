@@ -3,6 +3,7 @@
 // 탐색기 충돌 격리 - sparse package 의 SurrogateServer 로 dllhost 대리 프로세스에서 실행됨
 #![allow(non_snake_case)]
 
+pub mod explorer;
 pub mod location;
 
 use location::{items, Item, Location};
@@ -109,6 +110,7 @@ pub fn launch(cmd: &str, path: &PathBuf) -> windows::core::Result<()> {
 
 // 최상위 "이음매" - 하위 명령을 가진 메뉴
 // 셸은 GetState(고른 항목 있음) 다음 EnumSubCommands(항목 없음) 순서로 부름 - 위치를 기억해 그 위치 항목만 돌려줌
+// 폴더 빈 곳(새 메뉴)은 GetState 에도 항목 없음 - 맨 앞 탐색기 창의 현재 폴더로
 #[implement(IExplorerCommand)]
 #[derive(Default)]
 pub struct Root {
@@ -122,7 +124,7 @@ impl IExplorerCommand_Impl for Root_Impl {
     fn GetCanonicalName(&self) -> windows::core::Result<GUID> { Ok(CLSID_MENU) }
     fn GetState(&self, items: Ref<IShellItemArray>, _: BOOL) -> windows::core::Result<u32> {
         // 파일 시스템 경로가 아닌 곳(제어판 등)에서는 숨김
-        let loc = first_path(items.as_ref()).map(|p| Location::of(&p));
+        let loc = first_path(items.as_ref()).or_else(explorer::current_folder).map(|p| Location::of(&p));
         let state = if loc.is_some() { ECS_ENABLED } else { ECS_HIDDEN };
         *self.loc.borrow_mut() = loc;
         Ok(state.0 as u32)
@@ -131,8 +133,9 @@ impl IExplorerCommand_Impl for Root_Impl {
     fn GetFlags(&self) -> windows::core::Result<u32> { Ok(ECF_HASSUBCOMMANDS.0 as u32) }
     fn EnumSubCommands(&self) -> windows::core::Result<IEnumExplorerCommand> {
         // 위치를 모르면(GetState 없이 바로 불린 경우) 모든 항목, 안 맞는 것은 하위 GetState 에서 숨김
-        let list = match self.loc.borrow().as_ref() { Some(loc) => items(loc), None => all_items() };
-        let all: Vec<IExplorerCommand> = list.into_iter().map(|i| Sub { item: i }.into()).collect();
+        let loc = self.loc.borrow().clone();
+        let list = match loc.as_ref() { Some(loc) => items(loc), None => all_items() };
+        let all: Vec<IExplorerCommand> = list.into_iter().map(|i| Sub { item: i, loc: loc.clone() }.into()).collect();
         Ok(SubList { items: all, pos: Cell::new(0) }.into())
     }
 }
@@ -155,9 +158,11 @@ pub fn all_items() -> Vec<Item> {
 }
 
 // 하위 명령 하나 - 지금 위치의 항목 목록에 있을 때만 보임
+// 이전 메뉴("더 보기")는 하위 GetState·Invoke 에 항목 없이 부름 - 최상위가 기억한 위치로
 #[implement(IExplorerCommand)]
 pub struct Sub {
     pub item: Item,
+    pub loc: Option<Location>,
 }
 
 impl Sub {
@@ -176,11 +181,13 @@ impl IExplorerCommand_Impl for Sub_Impl {
     fn GetToolTip(&self, _: Ref<IShellItemArray>) -> windows::core::Result<PWSTR> { Err(E_NOTIMPL.into()) }
     fn GetCanonicalName(&self) -> windows::core::Result<GUID> { Ok(GUID::zeroed()) }
     fn GetState(&self, items: Ref<IShellItemArray>, _: BOOL) -> windows::core::Result<u32> {
-        let visible = first_path(items.as_ref()).map(|p| self.visible_at(&Location::of(&p))).unwrap_or(false);
+        let loc = first_path(items.as_ref()).map(|p| Location::of(&p)).or_else(|| self.loc.clone());
+        let visible = loc.map(|l| self.visible_at(&l)).unwrap_or(false);
         Ok(if visible { ECS_ENABLED.0 as u32 } else { ECS_HIDDEN.0 as u32 })
     }
     fn Invoke(&self, items: Ref<IShellItemArray>, _: Ref<IBindCtx>) -> windows::core::Result<()> {
-        let (Some(id), Some(path)) = (self.item.id, first_path(items.as_ref())) else { return Ok(()) };
+        let path = first_path(items.as_ref()).or_else(|| self.loc.as_ref().map(|l| l.path.clone()));
+        let (Some(id), Some(path)) = (self.item.id, path) else { return Ok(()) };
         launch(id, &path)
     }
     fn GetFlags(&self) -> windows::core::Result<u32> {

@@ -32,12 +32,18 @@ pub const OVERLAYS: [(Status, GUID, &str); 4] = [
 const PIPE_TIMEOUT_MS: u32 = 40;
 // 같은 경로 다시 묻지 않는 시간 - 표시 넷이 한 번에 묻는 동안
 const ANSWER_TTL: Duration = Duration::from_millis(1500);
+// Unknown 은 짧게 - 캐시가 계산 끝내고(약 0.5초) 알리면 탐색기가 다시 물음, 그때는 새로 물어야 함
+const UNKNOWN_TTL: Duration = Duration::from_millis(200);
 // 캐시 프로세스 다시 띄우기 간격
 const RESTART_GAP_MS: u64 = 10_000;
+// 캐시 기동 뒤 놓친 경로 다시 묻는 기간
+const RETRY_WINDOW: Duration = Duration::from_secs(10);
 
 static MODULE: AtomicIsize = AtomicIsize::new(0);
 static LAST_START: AtomicU64 = AtomicU64::new(0);
 static ANSWERS: Mutex<Option<HashMap<PathBuf, (Status, Instant)>>> = Mutex::new(None);
+// 캐시가 없어 Unknown 으로 답한 경로 - 폴더마다 하나, 캐시가 뜨면 다시 물어 계산 시작
+static PENDING: Mutex<Vec<PathBuf>> = Mutex::new(Vec::new());
 
 #[no_mangle]
 extern "system" fn DllMain(instance: HINSTANCE, reason: u32, _: *mut c_void) -> BOOL {
@@ -73,7 +79,8 @@ pub fn status_of(path: &Path) -> Status {
         let mut g = ANSWERS.lock().unwrap();
         let map = g.get_or_insert_with(HashMap::new);
         if let Some((st, t)) = map.get(path) {
-            if t.elapsed() < ANSWER_TTL {
+            let ttl = if *st == Status::Unknown { UNKNOWN_TTL } else { ANSWER_TTL };
+            if t.elapsed() < ttl {
                 return *st;
             }
         }
@@ -89,6 +96,16 @@ pub fn status_of(path: &Path) -> Status {
 }
 
 pub fn ask(path: &Path) -> Status {
+    if let Some(st) = call(path) {
+        return st;
+    }
+    remember(path);
+    start_cache();
+    Status::Unknown
+}
+
+// 파이프 한 번 - 캐시 없거나 응답 없으면 None
+fn call(path: &Path) -> Option<Status> {
     let req: Vec<u8> = path.as_os_str().to_string_lossy().encode_utf16().flat_map(|w| w.to_le_bytes()).collect();
     let mut out = [0u8; 1];
     let mut n = 0u32;
@@ -103,11 +120,34 @@ pub fn ask(path: &Path) -> Status {
             PIPE_TIMEOUT_MS,
         )
     };
-    if ok.as_bool() && n == 1 {
-        return Status::from_byte(out[0]);
+    (ok.as_bool() && n == 1).then(|| Status::from_byte(out[0]))
+}
+
+fn remember(path: &Path) {
+    let mut pending = PENDING.lock().unwrap();
+    if pending.len() < 256 && !pending.iter().any(|p| p.parent() == path.parent()) {
+        pending.push(path.to_path_buf());
     }
-    start_cache();
-    Status::Unknown
+}
+
+// 캐시 기동 직후 - 놓친 경로를 다시 물으면 캐시가 계산 후 탐색기에 알림
+fn retry_pending() {
+    std::thread::spawn(|| {
+        let start = Instant::now();
+        while start.elapsed() < RETRY_WINDOW {
+            std::thread::sleep(Duration::from_millis(100));
+            let paths = PENDING.lock().unwrap().clone();
+            if paths.is_empty() {
+                return;
+            }
+            for p in paths {
+                if call(&p).is_some() {
+                    PENDING.lock().unwrap().retain(|q| q != &p);
+                }
+            }
+        }
+        PENDING.lock().unwrap().clear();
+    });
 }
 
 // 캐시 프로세스 띄우기 - DLL 옆 ieummae-cache.exe, 10초에 한 번까지
@@ -126,6 +166,7 @@ fn start_cache() {
         if CreateProcessW(&exe_w, Some(PWSTR(line.as_mut_ptr())), None, None, false, DETACHED_PROCESS | CREATE_NO_WINDOW, None, PCWSTR::null(), &si, &mut pi).is_ok() {
             let _ = windows::Win32::Foundation::CloseHandle(pi.hProcess);
             let _ = windows::Win32::Foundation::CloseHandle(pi.hThread);
+            retry_pending();
         }
     }
 }
